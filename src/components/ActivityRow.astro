@@ -1,0 +1,150 @@
+---
+// ActivityRow.astro — Fila de actividad en estilo editorial (sin cards)
+import type { Activity } from "../data/feria";
+
+interface Props {
+  activity: Activity;
+  isNext?: boolean;    // marcar como "próxima" actividad
+  compact?: boolean;   // variante compacta para upcoming
+}
+
+const { activity, isNext = false, compact = false } = Astro.props;
+---
+
+{compact ? (
+  <div class="activity-row activity-row--compact">
+    <span class="activity-time activity-time--compact">{activity.time}</span>
+    <span class="activity-name--compact">{activity.title}</span>
+  </div>
+) : (
+  <div class={`activity-row ${isNext ? "activity-row--next" : ""}`}>
+    <span class="activity-time">{activity.time}</span>
+    <div class="activity-body">
+      <p class="activity-name">{activity.title}</p>
+      <p class="activity-place">
+        <svg class="place-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
+        </svg>
+        {activity.location}
+      </p>
+    </div>
+    {isNext && (
+      <span class="next-badge" aria-label="Próxima actividad">Próxima</span>
+    )}
+  </div>
+)}
+
+<style>
+  /* ─── Row base ───────────────────────────────────── */
+  .activity-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    min-height: 44px;
+  }
+
+  .activity-row + .activity-row {
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  /* ─── Highlighted: next activity ─────────────────── */
+  .activity-row--next {
+    /* Márgen izquierdo coloreado */
+    padding-left: 0.875rem;
+    margin-left: -0.875rem;
+    border-left: 3px solid var(--color-fire);
+  }
+
+  /* ─── Time column ────────────────────────────────── */
+  .activity-time {
+    font-size: 0.8125rem;    /* 13px */
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    color: var(--color-fire);
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: 4.25rem;
+    padding-top: 0.125rem;
+    text-align: right;
+  }
+
+  /* ─── Body column ────────────────────────────────── */
+  .activity-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .activity-name {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-text-dark);
+    margin: 0;
+  }
+
+  .activity-place {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted-dark);
+    margin: 0.2rem 0 0;
+    line-height: 1.4;
+  }
+
+  .place-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+    color: var(--color-text-muted-dark);
+    opacity: 0.7;
+  }
+
+  /* ─── Next badge ─────────────────────────────────── */
+  .next-badge {
+    flex-shrink: 0;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-fire);
+    border: 1px solid var(--color-fire);
+    border-radius: 3px;
+    padding: 0.15em 0.4em;
+    align-self: flex-start;
+    margin-top: 0.2rem;
+  }
+
+  /* ─── Compact variant (para Próximamente) ─────────── */
+  .activity-row--compact {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.45rem 0;
+  }
+
+  .activity-row--compact + .activity-row--compact {
+    border-top: 1px solid var(--color-border-dark);
+  }
+
+  .activity-time--compact {
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fire-light);
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: 3.5rem;
+    text-align: right;
+  }
+
+  .activity-name--compact {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-text-light);
+    flex: 1;
+    min-width: 0;
+  }
+</style>

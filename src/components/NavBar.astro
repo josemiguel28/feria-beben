@@ -1,0 +1,91 @@
+---
+// NavBar.astro — Barra de navegación sticky
+interface Props {
+  feriaName: string;
+}
+const { feriaName } = Astro.props;
+---
+
+<header class="navbar" role="banner">
+  <div class="navbar-inner container">
+    <!-- Logo / nombre -->
+    <a href="/" class="navbar-logo" aria-label={`${feriaName} — Inicio`}>
+      <span class="navbar-logo-text">{feriaName}</span>
+    </a>
+
+    <!-- Nav links — 3 anchors que caben en mobile -->
+    <nav class="navbar-nav" aria-label="Navegación principal">
+      <a href="#hoy"    class="navbar-link">Hoy</a>
+      <a href="#pueblo" class="navbar-link">Pueblo</a>
+      <a href="#info"   class="navbar-link">Info</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--color-ink);
+    border-bottom: 1px solid var(--color-border-dark);
+  }
+
+  .navbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    gap: 1rem;
+  }
+
+  /* Logo */
+  .navbar-logo {
+    text-decoration: none;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  .navbar-logo-text {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-cream-warm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    /* Italic para personalidad de Fraunces */
+    font-style: italic;
+  }
+
+  /* Nav */
+  .navbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    flex-shrink: 0;
+  }
+
+  .navbar-link {
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-muted-light);
+    text-decoration: none;
+    padding: 0.5rem 0.625rem;
+    border-radius: 4px;
+    transition: color 0.15s ease;
+    /* Touch target mínimo */
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-link:hover,
+  .navbar-link:focus-visible {
+    color: var(--color-cream-warm);
+  }
+</style>

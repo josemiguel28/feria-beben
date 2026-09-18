@@ -1,164 +1,159 @@
 ---
-// TodaySection.astro
-// The hero of the page: current day + today's activities
+// TodaySection.astro — Sección HOY (rediseño editorial)
 import type { FeriaDay } from "../data/feria";
-import ActivityCard from "./ActivityCard.astro";
+import ActivityRow from "./ActivityRow.astro";
 
 interface Props {
   day: FeriaDay;
-  dayIndex: number;  // 0-based index (day 1 = index 0)
+  dayIndex: number;
   totalDays: number;
 }
 
 const { day, dayIndex, totalDays } = Astro.props;
 
-// Split into "past" and "upcoming" activities based on current time
-// For this prototype we just display all of them
-const activities = day.activities;
-
-// Determine day ordinal label e.g. "Día 3 de 7"
-const dayOrdinal = dayIndex + 1;
-
-// Day of week capitalized
 const fullDate = new Date(day.date + "T12:00:00");
-const weekday = fullDate.toLocaleDateString("es-HN", { weekday: "long" });
-const weekdayCapitalized = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-const monthName = fullDate.toLocaleDateString("es-HN", { month: "long" });
+const weekdayLong  = fullDate.toLocaleDateString("es-HN", { weekday: "long" });
+const weekdayCap   = weekdayLong.charAt(0).toUpperCase() + weekdayLong.slice(1);
+const monthName    = fullDate.toLocaleDateString("es-HN", { month: "long" });
+const dayNumber    = day.dayNumber;
+const dayOrdinal   = dayIndex + 1;
+
+// Determinar la actividad "próxima" basándonos en la hora actual
+// En producción esto usaría la hora real; aquí lo simulamos con la primera actividad
+const now = new Date();
+const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+function parseTime(timeStr: string): number {
+  const [timePart, ampm] = timeStr.split(" ");
+  let [h, m] = timePart.split(":").map(Number);
+  if (ampm === "PM" && h !== 12) h += 12;
+  if (ampm === "AM" && h === 12) h = 0;
+  return h * 60 + (m || 0);
+}
+
+let nextActivityIndex = -1;
+for (let i = 0; i < day.activities.length; i++) {
+  const actMinutes = parseTime(day.activities[i].time);
+  if (actMinutes > nowMinutes) {
+    nextActivityIndex = i;
+    break;
+  }
+}
+// Si todas pasaron, no marcamos ninguna; si ninguna empezó aún, marcamos la primera
+if (nextActivityIndex === -1 && nowMinutes < parseTime(day.activities[0].time)) {
+  nextActivityIndex = 0;
+}
 ---
 
-<section class="today-section" aria-label="Actividades de hoy">
-  <!-- Day identity block -->
-  <div class="today-identity page-container">
-    <div class="today-meta">
-      <span class="section-label">Hoy · Día {dayOrdinal} de {totalDays}</span>
-    </div>
-    <div class="today-date-row">
-      <h1 class="today-weekday">{weekdayCapitalized}</h1>
-      <div class="today-number-block" aria-hidden="true">
-        <span class="today-number">{day.dayNumber}</span>
+<section id="hoy" class="today-section section-light" aria-label="Actividades de hoy">
+  <div class="container">
+
+    <!-- Header de sección: label + identidad del día -->
+    <div class="today-header">
+      <div class="today-header-left">
+        <p class="section-eyebrow today-eyebrow">¿Qué hay hoy?</p>
+        <p class="today-day-label">Día {dayOrdinal} de {totalDays}</p>
+      </div>
+      <div class="today-header-right" aria-label={`${weekdayCap} ${dayNumber} de ${monthName}`}>
+        <span class="today-weekday">{weekdayCap}</span>
+        <span class="today-number">{dayNumber}</span>
         <span class="today-month">{monthName}</span>
       </div>
     </div>
-    <p class="today-tagline">¡Hay feria en el pueblo!</p>
-  </div>
 
-  <!-- Activities list -->
-  <div class="today-activities-wrapper">
-    <div class="page-container">
-      <h2 class="activities-heading section-label">
-        <svg class="heading-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clip-rule="evenodd" />
-        </svg>
-        Programa de hoy
-      </h2>
-    </div>
+    <!-- Divider -->
+    <hr class="section-divider today-divider" />
 
-    <!-- Activities card -->
-    <div class="activities-card page-container">
-      <div class="card activities-list" role="list" aria-label="Actividades de hoy">
-        {activities.map((act, i) => (
-          <ActivityCard
+    <!-- Lista de actividades -->
+    <div role="list" aria-label={`Actividades del ${weekdayCap} ${dayNumber}`} class="today-list">
+      {day.activities.map((act, i) => (
+        <div role="listitem">
+          <ActivityRow
             activity={act}
-            variant="today"
-            animationClass={`reveal reveal-${Math.min(i + 1, 5)}`}
+            isNext={i === nextActivityIndex}
           />
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
+
   </div>
 </section>
 
 <style>
   .today-section {
-    background-color: var(--color-today-bg);
-    padding-bottom: 1.5rem;
+    padding-block: 3rem 3.5rem;
+    border-top: 1px solid var(--color-border-light);
   }
 
-  /* ─── Day Identity Block ─────────────────────── */
-  .today-identity {
-    padding-top: 1.5rem;
-    padding-bottom: 1.25rem;
-  }
-
-  .today-meta {
-    margin-bottom: 0.375rem;
-  }
-
-  .today-date-row {
+  /* ─── Section header ─────────────────────────────── */
+  .today-header {
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .today-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-top: 0.25rem;
+  }
+
+  .today-eyebrow {
+    color: var(--color-text-muted-dark);
+    margin: 0;
+  }
+
+  .today-day-label {
+    font-size: 0.875rem;
+    color: var(--color-text-muted-dark);
+    margin: 0;
+  }
+
+  .today-header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1;
+    gap: 0.1rem;
+    flex-shrink: 0;
   }
 
   .today-weekday {
     font-family: var(--font-display);
-    font-size: 2.5rem;
+    font-size: clamp(1.75rem, 8vw, 2.5rem);
     font-weight: 800;
+    color: var(--color-fire);
+    letter-spacing: -0.02em;
     line-height: 1;
-    color: var(--color-accent);
-    margin: 0;
-    /* Allow it to shrink on very small screens */
-    min-width: 0;
-  }
-
-  .today-number-block {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    flex-shrink: 0;
   }
 
   .today-number {
-    font-size: 3rem;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-    color: var(--color-text);
     font-family: var(--font-display);
+    font-size: clamp(3rem, 14vw, 5rem);
+    font-weight: 900;
+    line-height: 0.85;
+    color: var(--color-text-dark);
+    letter-spacing: -0.04em;
   }
 
   .today-month {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-muted-dark);
     text-transform: capitalize;
     letter-spacing: 0.04em;
-    line-height: 1.2;
   }
 
-  .today-tagline {
-    font-size: 0.9375rem;
-    color: var(--color-text-muted);
-    margin: 0.5rem 0 0;
-    font-style: italic;
+  /* ─── Divider ────────────────────────────────────── */
+  .today-divider {
+    margin-bottom: 0;
   }
 
-  /* ─── Activities Wrapper ─────────────────────── */
-  .today-activities-wrapper {
-    margin-top: 0.25rem;
-  }
-
-  .activities-heading {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    margin-bottom: 0.625rem;
-  }
-
-  .heading-icon {
-    width: 0.875rem;
-    height: 0.875rem;
-    color: var(--color-accent);
-  }
-
-  .activities-card {
-    /* slight box shadow to lift the card from today bg */
-  }
-
-  .activities-list {
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-today);
+  /* ─── List ───────────────────────────────────────── */
+  .today-list {
+    /* El padding crea espacio visual alrededor de la lista */
   }
 </style>

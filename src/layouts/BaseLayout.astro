@@ -8,7 +8,7 @@ interface Props {
 
 const {
   title = "Feria Patronal de San Marcos 2026",
-  description = "Tu guía digital para la Feria Patronal de San Marcos de la Sierra, Honduras. Consulta el programa de actividades, restaurantes, hospedaje y más.",
+  description = "Tu guía para la Feria Patronal de San Marcos de la Sierra, Honduras. Programa de actividades, restaurantes, hospedaje y más.",
 } = Astro.props;
 ---
 
@@ -18,20 +18,25 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#D4500A" />
+    <meta name="theme-color" content="#0F0A05" />
 
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content="/hero.jpg" />
 
     <title>{title}</title>
 
-    <!-- Preconnect to Google Fonts -->
+    <!-- Preconnect for fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
+    <!-- Preload hero image for LCP -->
+    <link rel="preload" as="image" href="/hero.jpg" />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
   </head>
   <body>
     <slot />

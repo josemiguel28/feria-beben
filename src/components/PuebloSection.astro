@@ -1,0 +1,203 @@
+---
+// PuebloSection.astro — Descubre el pueblo (directorio editorial inline)
+import {
+  restaurants,
+  cafes,
+  hotels,
+  landmarks,
+  type Place,
+} from "../data/feria";
+
+interface Category {
+  id: string;
+  icon: string;
+  label: string;
+  places: Place[];
+}
+
+const categories: Category[] = [
+  { id: "comer",     icon: "🍽️",  label: "Dónde comer",      places: restaurants },
+  { id: "cafes",     icon: "☕",  label: "Cafeterías",         places: cafes       },
+  { id: "hospedaje", icon: "🛏️",  label: "Hospedaje",          places: hotels      },
+  { id: "lugares",   icon: "📍",  label: "Lugares de interés", places: landmarks   },
+];
+---
+
+<section id="pueblo" class="pueblo-section section-light" aria-label="Descubre el pueblo">
+  <div class="container">
+
+    <!-- Section header -->
+    <div class="pueblo-header">
+      <p class="section-eyebrow pueblo-eyebrow">¿Dónde puedo ir?</p>
+      <h2 class="pueblo-title display-lg">
+        Descubre<br/>el pueblo
+      </h2>
+      <p class="pueblo-subtitle">
+        Todo lo que necesitas a mano durante la feria.
+      </p>
+    </div>
+
+    <!-- Categories + Places -->
+    {categories.map((cat) => (
+      <div class="category-block" id={cat.id}>
+        <!-- Category header -->
+        <div class="category-header">
+          <span class="category-icon" aria-hidden="true">{cat.icon}</span>
+          <h3 class="category-label">{cat.label}</h3>
+        </div>
+
+        <!-- Place list -->
+        <div class="place-list" role="list">
+          {cat.places.map((place, i) => (
+            <div class="place-item" role="listitem">
+              <div class="place-header-row">
+                <p class="place-name">{place.name}</p>
+                {place.hours && (
+                  <span class="place-hours">{place.hours}</span>
+                )}
+              </div>
+              <p class="place-description">{place.description}</p>
+              <p class="place-address">
+                <svg class="place-address-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
+                </svg>
+                {place.address}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+
+  </div>
+</section>
+
+<style>
+  .pueblo-section {
+    padding-block: 3rem 3.5rem;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  /* ─── Section header ──────────────────────────────── */
+  .pueblo-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .pueblo-eyebrow {
+    color: var(--color-text-muted-dark);
+    margin: 0 0 0.5rem;
+  }
+
+  .pueblo-title {
+    margin: 0 0 0.75rem;
+    color: var(--color-text-dark);
+    /* Italic en la fuente display para personalidad */
+    font-style: italic;
+  }
+
+  .pueblo-subtitle {
+    font-size: 0.9375rem;
+    color: var(--color-text-muted-dark);
+    margin: 0;
+    max-width: 32ch;
+  }
+
+  /* ─── Category block ──────────────────────────────── */
+  .category-block {
+    margin-bottom: 2.25rem;
+  }
+
+  .category-block:last-child {
+    margin-bottom: 0;
+  }
+
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.625rem;
+    border-bottom: 2px solid var(--color-border-light);
+  }
+
+  .category-icon {
+    font-size: 1.125rem;
+    line-height: 1;
+  }
+
+  .category-label {
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted-dark);
+    margin: 0;
+  }
+
+  /* ─── Place list ──────────────────────────────────── */
+  .place-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .place-item {
+    padding: 1rem 0;
+  }
+
+  .place-item + .place-item {
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .place-header-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .place-name {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--color-text-dark);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .place-hours {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-fire);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .place-description {
+    font-size: 0.875rem;
+    color: var(--color-text-muted-dark);
+    margin: 0 0 0.35rem;
+    line-height: 1.5;
+  }
+
+  .place-address {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted-dark);
+    opacity: 0.75;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .place-address-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    color: var(--color-text-muted-dark);
+  }
+</style>

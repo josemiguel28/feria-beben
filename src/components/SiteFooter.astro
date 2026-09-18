@@ -1,0 +1,148 @@
+---
+// SiteFooter.astro — Footer completo
+interface Props {
+  feriaName: string;
+  town: string;
+  year: number;
+  patronSaint: string;
+}
+
+const { feriaName, town, year, patronSaint } = Astro.props;
+---
+
+<footer class="site-footer" role="contentinfo">
+  <div class="container footer-inner">
+
+    <!-- Main identity -->
+    <div class="footer-identity">
+      <p class="footer-title">{feriaName}</p>
+      <p class="footer-year">{year}</p>
+    </div>
+
+    <hr class="footer-divider" />
+
+    <!-- Secondary info -->
+    <div class="footer-meta">
+      <p class="footer-place">{town} · Honduras</p>
+      <p class="footer-patron">En honor a {patronSaint}</p>
+    </div>
+
+    <hr class="footer-divider footer-divider--subtle" />
+
+    <!-- Nav links -->
+    <nav class="footer-nav" aria-label="Navegación del footer">
+      <a href="#hoy" class="footer-link">Programa de hoy</a>
+      <a href="#proximo" class="footer-link">Próximamente</a>
+      <a href="#pueblo" class="footer-link">El pueblo</a>
+      <a href="#info" class="footer-link">Información</a>
+    </nav>
+
+    <hr class="footer-divider footer-divider--subtle" />
+
+    <!-- Copyright -->
+    <p class="footer-copy">© {year} Feria Patronal de San Marcos</p>
+
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background-color: var(--color-ink);
+    padding-block: 3rem 2rem;
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  /* Identity */
+  .footer-identity {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .footer-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 800;
+    font-style: italic;
+    color: var(--color-cream-warm);
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .footer-year {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: var(--color-text-muted-light);
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  /* Dividers */
+  .footer-divider {
+    border: none;
+    border-top: 1px solid var(--color-border-dark);
+    margin: 0;
+  }
+
+  .footer-divider--subtle {
+    opacity: 0.5;
+  }
+
+  /* Meta */
+  .footer-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .footer-place {
+    font-size: 0.875rem;
+    color: var(--color-text-muted-light);
+    margin: 0;
+  }
+
+  .footer-patron {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted-light);
+    opacity: 0.6;
+    font-style: italic;
+    margin: 0;
+  }
+
+  /* Nav */
+  .footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+  }
+
+  .footer-link {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted-light);
+    text-decoration: none;
+    padding: 0.25rem 0;
+    transition: color 0.15s ease;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+  }
+
+  .footer-link:hover {
+    color: var(--color-cream-warm);
+  }
+
+  /* Copyright */
+  .footer-copy {
+    font-size: 0.75rem;
+    color: var(--color-text-muted-light);
+    opacity: 0.45;
+    margin: 0;
+  }
+</style>

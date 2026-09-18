@@ -1,83 +1,78 @@
 ---
-// UpcomingSection.astro
-// Shows tomorrow (expanded) + remaining days (collapsed summary)
+// UpcomingSection.astro — Próximas actividades (fondo oscuro, estilo timeline)
 import type { FeriaDay } from "../data/feria";
-import ActivityCard from "./ActivityCard.astro";
+import ActivityRow from "./ActivityRow.astro";
 
 interface Props {
-  days: FeriaDay[]; // days AFTER today, ordered chronologically
+  days: FeriaDay[];   // días DESPUÉS de hoy, en orden
 }
 
 const { days } = Astro.props;
-
 if (days.length === 0) {
-  // No upcoming days — render nothing
+  // no renderizar nada
 }
 
-// Tomorrow is the first item, the rest are "later days"
 const [tomorrow, ...laterDays] = days;
 
-// Helper: format a FeriaDay date label
-const dayLabel = (day: FeriaDay) => {
+// Helper: nombre corto del día "Mié 23"
+const shortLabel = (day: FeriaDay) => {
   const d = new Date(day.date + "T12:00:00");
-  const weekday = d.toLocaleDateString("es-HN", { weekday: "long" });
-  return weekday.charAt(0).toUpperCase() + weekday.slice(1) + " " + day.dayNumber;
+  const wd = d.toLocaleDateString("es-HN", { weekday: "short" });
+  const wdCap = wd.charAt(0).toUpperCase() + wd.slice(1).replace(".", "");
+  return `${wdCap} ${day.dayNumber}`;
+};
+
+// Full day name for tomorrow
+const tomorrowFull = (day: FeriaDay) => {
+  const d = new Date(day.date + "T12:00:00");
+  const wd = d.toLocaleDateString("es-HN", { weekday: "long" });
+  return wd.charAt(0).toUpperCase() + wd.slice(1);
 };
 ---
 
 {days.length > 0 && (
-  <section class="upcoming-section" aria-label="Próximos días">
-    <div class="page-container">
+  <section id="proximo" class="upcoming-section section-dark" aria-label="Próximas actividades">
+    <div class="container">
 
-      <!-- Section header -->
+      <!-- Header -->
       <div class="upcoming-header">
-        <span class="section-label upcoming-label">Próximamente</span>
+        <p class="section-eyebrow upcoming-eyebrow">¿Qué viene después?</p>
       </div>
 
-      <!-- ── Tomorrow (expanded) ───────────────────── -->
+      <!-- ── Mañana (expandido) ─────────────────────── -->
       {tomorrow && (
         <div class="tomorrow-block">
-          <div class="day-pill-row">
-            <span class="day-pill day-pill--tomorrow">
-              <span class="day-pill-label">Mañana</span>
-              <span class="day-pill-date">{dayLabel(tomorrow)}</span>
-            </span>
-          </div>
-
-          <div class="card tomorrow-card">
-            <div role="list" aria-label={`Actividades del ${dayLabel(tomorrow)}`}>
-              {tomorrow.activities.map((act, i) => (
-                <ActivityCard
-                  activity={act}
-                  variant="upcoming"
-                  animationClass=""
-                />
-              ))}
-            </div>
+          <h2 class="tomorrow-title">
+            <span class="tomorrow-label">Mañana</span>
+            <span class="tomorrow-day">— {tomorrowFull(tomorrow)} {tomorrow.dayNumber}</span>
+          </h2>
+          <div role="list" aria-label={`Actividades del ${tomorrowFull(tomorrow)} ${tomorrow.dayNumber}`}>
+            {tomorrow.activities.map((act) => (
+              <div role="listitem">
+                <ActivityRow activity={act} compact={true} />
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      <!-- ── Later days (compact summary) ─────────── -->
+      <!-- ── Días siguientes ────────────────────────── -->
       {laterDays.length > 0 && (
-        <div class="later-days">
+        <div class="later-section">
           {laterDays.map((day) => (
-            <details class="later-day-item">
-              <summary class="later-day-summary">
-                <span class="later-day-name">{dayLabel(day)}</span>
-                <span class="later-day-count">
-                  {day.activities.length} {day.activities.length === 1 ? "actividad" : "actividades"}
-                </span>
-                <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <details class="later-day">
+              <summary class="later-day-summary" aria-label={`${shortLabel(day)}: ${day.activities.length} actividades`}>
+                <span class="later-day-name">{shortLabel(day)}</span>
+                <span class="later-day-count">{day.activities.length} actividades</span>
+                <svg class="later-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                   <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                 </svg>
               </summary>
 
-              <div class="later-day-activities">
+              <div class="later-day-activities" role="list">
                 {day.activities.map((act) => (
-                  <div class="later-activity-row">
-                    <span class="time-badge">{act.time}</span>
-                    <span class="later-activity-title">{act.title}</span>
+                  <div role="listitem">
+                    <ActivityRow activity={act} compact={true} />
                   </div>
                 ))}
               </div>
@@ -92,154 +87,115 @@ const dayLabel = (day: FeriaDay) => {
 
 <style>
   .upcoming-section {
-    background-color: var(--color-bg);
-    padding-block: 1.5rem;
-    border-top: 3px solid var(--color-border);
+    padding-block: 3rem 3.5rem;
   }
 
+  /* ─── Header ──────────────────────────────────────── */
   .upcoming-header {
-    margin-bottom: 1rem;
+    margin-bottom: 1.75rem;
   }
 
-  .upcoming-label {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
+  .upcoming-eyebrow {
+    color: var(--color-text-muted-light);
+    margin: 0;
   }
 
-  .upcoming-label::before {
-    content: "";
-    display: inline-block;
-    width: 0.75rem;
-    height: 2px;
-    background-color: var(--color-text-muted);
-    border-radius: 2px;
-  }
-
-  /* ─── Tomorrow block ─────────────────────────── */
+  /* ─── Mañana ──────────────────────────────────────── */
   .tomorrow-block {
-    margin-bottom: 1.25rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border-dark);
   }
 
-  .day-pill-row {
-    margin-bottom: 0.625rem;
-  }
-
-  .day-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.3rem 0.75rem;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.8125rem;
-  }
-
-  .day-pill--tomorrow {
-    background-color: var(--color-gold-light);
-    color: #92400E; /* amber-800 */
-  }
-
-  .day-pill-label {
-    font-weight: 700;
-    font-size: 0.8125rem;
-  }
-
-  .day-pill-date {
-    font-weight: 500;
-    font-size: 0.75rem;
-    opacity: 0.85;
-  }
-
-  .tomorrow-card {
-    border: 1px solid var(--color-border);
-    overflow: hidden;
-    padding: 0.25rem 0.75rem;
-  }
-
-  /* ─── Later days ─────────────────────────────── */
-  .later-days {
+  .tomorrow-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 6vw, 2.25rem);
+    font-weight: 800;
+    color: var(--color-text-light);
+    margin: 0 0 1rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.5rem;
   }
 
-  .later-day-item {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
-    overflow: hidden;
+  .tomorrow-label {
+    color: var(--color-gold);
+    font-style: italic;
   }
 
-  .later-day-summary {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1rem;
-    cursor: pointer;
-    list-style: none;
-    min-height: 44px;
-    user-select: none;
-
-    /* Remove default marker */
-    &::-webkit-details-marker { display: none; }
-    &::marker { display: none; }
+  .tomorrow-day {
+    font-size: 0.7em;
+    font-weight: 400;
+    color: var(--color-text-muted-light);
+    font-style: normal;
   }
 
-  .later-day-summary:hover {
-    background-color: var(--color-bg);
-  }
-
-  .later-day-name {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--color-text);
-    flex: 1;
-  }
-
-  .later-day-count {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    white-space: nowrap;
-  }
-
-  .chevron-icon {
-    width: 1rem;
-    height: 1rem;
-    color: var(--color-text-subtle);
-    flex-shrink: 0;
-    transition: rotate 0.2s ease;
-  }
-
-  details[open] .chevron-icon {
-    rotate: 180deg;
-  }
-
-  /* Animate open/close */
-  .later-day-activities {
-    padding: 0.5rem 1rem 0.875rem;
-    border-top: 1px solid var(--color-border);
+  /* ─── Días siguientes ─────────────────────────────── */
+  .later-section {
     display: flex;
     flex-direction: column;
     gap: 0;
   }
 
-  .later-activity-row {
+  /* details nativo */
+  .later-day {
+    border-top: 1px solid var(--color-border-dark);
+  }
+
+  .later-day:last-child {
+    border-bottom: 1px solid var(--color-border-dark);
+  }
+
+  .later-day-summary {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem 0;
+    padding: 0.9rem 0;
+    cursor: pointer;
+    list-style: none;
+    min-height: 44px;
+    user-select: none;
+
+    &::-webkit-details-marker { display: none; }
+    &::marker { display: none; }
   }
 
-  .later-activity-row + .later-activity-row {
-    border-top: 1px solid var(--color-border);
+  .later-day-summary:hover .later-day-name {
+    color: var(--color-cream-warm);
   }
 
-  .later-activity-title {
-    font-size: 0.875rem;
-    color: var(--color-text);
-    font-weight: 500;
+  .later-day-name {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text-muted-light);
     flex: 1;
-    min-width: 0;
+    transition: color 0.15s ease;
+  }
+
+  .later-day-count {
+    font-size: 0.75rem;
+    color: var(--color-text-muted-light);
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+
+  .later-chevron {
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-text-muted-light);
+    flex-shrink: 0;
+    transition: rotate 0.2s ease;
+  }
+
+  details[open] .later-chevron {
+    rotate: 180deg;
+  }
+
+  .later-day-activities {
+    padding-bottom: 0.75rem;
   }
 </style>

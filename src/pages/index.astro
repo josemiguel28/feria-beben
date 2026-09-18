@@ -1,125 +1,110 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import FeriaHeader from "../components/FeriaHeader.astro";
+import NavBar from "../components/NavBar.astro";
+import HeroSection from "../components/HeroSection.astro";
 import TodaySection from "../components/TodaySection.astro";
 import UpcomingSection from "../components/UpcomingSection.astro";
-import ExploreSection from "../components/ExploreSection.astro";
+import PuebloSection from "../components/PuebloSection.astro";
+import InfoSection from "../components/InfoSection.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 import { feria } from "../data/feria";
 
-// ─── Determine current feria day ─────────────────────────────────────────────
-// We compare today's date against the feria days.
-// If outside the feria window, we show the first day (for demo purposes).
+// ─── Determinar día actual ───────────────────────────────────────────────────
+const todayISO = new Date().toISOString().split("T")[0];
 
-const todayISO = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
-
-// Find today's index in the feria schedule
 let todayIndex = feria.days.findIndex((d) => d.date === todayISO);
 
-// Prototype fallback: if today is not in the feria window,
-// use the day hardcoded as "martes 22" (index 2) to demonstrate the design.
+// Fallback para demo: Martes 22 (índice 2) — el día de demostración del diseño
 if (todayIndex === -1) {
-  todayIndex = 2; // Martes 22 = the featured day in our prototype
+  todayIndex = 2;
 }
 
-const todayDay = feria.days[todayIndex];
+const todayDay   = feria.days[todayIndex];
 const upcomingDays = feria.days.slice(todayIndex + 1);
-const currentDayNumber = todayIndex + 1; // 1-based
+const dayNumber    = todayIndex + 1;
 
-// ─── Page metadata ────────────────────────────────────────────────────────────
-const pageTitle = `${todayDay.dayLabel} · Feria Patronal de San Marcos 2026`;
-const pageDescription = `Programa de actividades del ${todayDay.dayLabel} en la Feria Patronal de San Marcos de la Sierra 2026. Consulta todo lo que hay hoy y los próximos días.`;
+// ¿La feria está activa? (hoy está dentro del rango de fechas)
+const todayDate = new Date(todayISO + "T12:00:00");
+const startDate = new Date(feria.startDate + "T12:00:00");
+const endDate   = new Date(feria.endDate   + "T12:00:00");
+const isActive  = todayDate >= startDate && todayDate <= endDate;
+
+// ─── Meta dinámica ───────────────────────────────────────────────────────────
+const fullDate = new Date(todayDay.date + "T12:00:00");
+const dayLabel = fullDate.toLocaleDateString("es-HN", { weekday: "long", day: "numeric", month: "long" });
+const dayLabelCap = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+
+const pageTitle       = `Feria Patronal de San Marcos 2026 — ${dayLabelCap}`;
+const pageDescription = `Programa de actividades para el ${dayLabelCap} en la Feria Patronal de San Marcos de la Sierra 2026. Consulta actividades, restaurantes y más.`;
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
 
-  <!-- ① Sticky compact header -->
-  <FeriaHeader
-    feriaName={feria.name}
-    town={feria.town}
-    startDate={feria.startDate}
-    endDate={feria.endDate}
-    currentDayNumber={currentDayNumber}
-    totalDays={feria.totalDays}
-  />
+  <!-- Skip to main content (accessibility) -->
+  <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+  <!-- ① Navbar -->
+  <NavBar feriaName={feria.name} />
 
   <main id="main-content">
 
-    <!-- ② + ③ Today's day and activities — THE HERO -->
+    <!-- ② Hero -->
+    <HeroSection
+      feriaName={feria.name}
+      town={feria.town}
+      year={feria.year}
+      startDate={feria.startDate}
+      endDate={feria.endDate}
+      currentDayNumber={dayNumber}
+      totalDays={feria.totalDays}
+      isActive={isActive}
+    />
+
+    <!-- ③ Hoy -->
     <TodaySection
       day={todayDay}
       dayIndex={todayIndex}
       totalDays={feria.totalDays}
     />
 
-    <!-- ④ + ⑤ Upcoming days -->
+    <!-- ④ Próximamente -->
     <UpcomingSection days={upcomingDays} />
 
-    <!-- ⑥ Explore the town -->
-    <ExploreSection />
+    <!-- ⑤ Descubre el pueblo -->
+    <PuebloSection />
+
+    <!-- ⑥ Información práctica -->
+    <InfoSection />
 
   </main>
 
-  <!-- Skip-to-content link (accessibility) -->
-  <a href="#main-content" class="skip-link">Ir al contenido principal</a>
-
-  <!-- Footer -->
-  <footer class="site-footer">
-    <div class="page-container">
-      <p class="footer-text">
-        Feria Patronal de San Marcos 2026 · San Marcos de la Sierra, Honduras
-      </p>
-      <p class="footer-patron">
-        En honor a San Marcos Evangelista
-      </p>
-    </div>
-  </footer>
+  <!-- ⑦ Footer -->
+  <SiteFooter
+    feriaName={feria.name}
+    town={feria.town}
+    year={feria.year}
+    patronSaint={feria.patronSaint}
+  />
 
 </BaseLayout>
 
 <style>
-  /* Skip link — visible only on focus */
+  /* Skip link — visible solo en focus (accesibilidad) */
   .skip-link {
     position: absolute;
     top: -999px;
     left: 1rem;
-    background: var(--color-accent);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0 0 0.5rem 0.5rem;
+    z-index: 200;
+    background: var(--color-fire);
+    color: #fff;
+    padding: 0.625rem 1.25rem;
     font-weight: 600;
     font-size: 0.875rem;
     text-decoration: none;
-    z-index: 100;
+    border-radius: 0 0 6px 6px;
   }
 
   .skip-link:focus {
     top: 0;
-  }
-
-  /* Footer */
-  .site-footer {
-    background-color: var(--color-text);
-    padding-block: 1.5rem;
-  }
-
-  .site-footer .page-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    align-items: center;
-    text-align: center;
-  }
-
-  .footer-text {
-    font-size: 0.75rem;
-    color: rgb(255 255 255 / 0.6);
-    margin: 0;
-  }
-
-  .footer-patron {
-    font-size: 0.6875rem;
-    color: rgb(255 255 255 / 0.4);
-    margin: 0;
-    font-style: italic;
   }
 </style>

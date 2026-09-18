@@ -1,28 +1,108 @@
 ---
-// NavBar.astro — Barra de navegación sticky
+// NavBar.astro — Mobile-first: logo + hamburger / Desktop: logo + nav links
 interface Props {
-  feriaName: string;
+  shortName: string;
 }
-const { feriaName } = Astro.props;
+const { shortName } = Astro.props;
 ---
 
 <header class="navbar" role="banner">
   <div class="navbar-inner container">
-    <!-- Logo / nombre -->
-    <a href="/" class="navbar-logo" aria-label={`${feriaName} — Inicio`}>
-      <span class="navbar-logo-text">{feriaName}</span>
+    <!-- Logo -->
+    <a href="/" class="navbar-logo" aria-label={`${shortName} — Inicio`}>
+      <span class="logo-mark" aria-hidden="true">✦</span>
+      <span class="logo-text">{shortName}</span>
     </a>
 
-    <!-- Nav links — 3 anchors que caben en mobile -->
-    <nav class="navbar-nav" aria-label="Navegación principal">
-      <a href="#hoy"    class="navbar-link">Hoy</a>
-      <a href="#pueblo" class="navbar-link">Pueblo</a>
-      <a href="#info"   class="navbar-link">Info</a>
+    <!-- Desktop nav (hidden on mobile) -->
+    <nav class="navbar-desktop-nav" aria-label="Navegación principal">
+      <a href="#hoy"     class="nav-link">Hoy</a>
+      <a href="#proximo" class="nav-link">Programa</a>
+      <a href="#pueblo"  class="nav-link">El Pueblo</a>
+      <a href="#info"    class="nav-link">Info</a>
     </nav>
+
+    <!-- Mobile: hamburger button -->
+    <button
+      class="hamburger"
+      id="nav-toggle"
+      aria-label="Abrir menú de navegación"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      type="button"
+    >
+      <!-- Hamburger icon — 3 lines -->
+      <span class="ham-line" aria-hidden="true"></span>
+      <span class="ham-line" aria-hidden="true"></span>
+      <span class="ham-line" aria-hidden="true"></span>
+    </button>
   </div>
+
+  <!-- Mobile menu panel -->
+  <nav
+    id="mobile-menu"
+    class="mobile-menu"
+    aria-label="Menú de navegación"
+    aria-hidden="true"
+  >
+    <div class="mobile-menu-inner container">
+      <a href="#hoy"     class="mobile-link" id="mnav-hoy">Hoy</a>
+      <a href="#proximo" class="mobile-link" id="mnav-programa">Programa</a>
+      <a href="#pueblo"  class="mobile-link" id="mnav-pueblo">El Pueblo</a>
+      <a href="#info"    class="mobile-link" id="mnav-info">Información</a>
+    </div>
+  </nav>
 </header>
 
+<!-- Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
+
+<script>
+  const toggle   = document.getElementById('nav-toggle')!;
+  const menu     = document.getElementById('mobile-menu')!;
+  const backdrop = document.getElementById('nav-backdrop')!;
+  const links    = menu.querySelectorAll('.mobile-link');
+
+  function open() {
+    menu.classList.add('is-open');
+    backdrop.classList.add('is-visible');
+    toggle.setAttribute('aria-expanded', 'true');
+    menu.setAttribute('aria-hidden', 'false');
+    toggle.setAttribute('aria-label', 'Cerrar menú');
+    toggle.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    menu.classList.remove('is-open');
+    backdrop.classList.remove('is-visible');
+    toggle.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
+    toggle.setAttribute('aria-label', 'Abrir menú de navegación');
+    toggle.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  toggle.addEventListener('click', () => {
+    const isOpen = menu.classList.contains('is-open');
+    isOpen ? close() : open();
+  });
+
+  backdrop.addEventListener('click', close);
+
+  // Close on link tap (anchor navigation)
+  links.forEach(link => {
+    link.addEventListener('click', close);
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menu.classList.contains('is-open')) close();
+  });
+</script>
+
 <style>
+  /* ─── Navbar shell ─────────────────────────────────────── */
   .navbar {
     position: sticky;
     top: 0;
@@ -39,53 +119,168 @@ const { feriaName } = Astro.props;
     gap: 1rem;
   }
 
-  /* Logo */
+  /* ─── Logo ─────────────────────────────────────────────── */
   .navbar-logo {
-    text-decoration: none;
-    min-width: 0;
-    flex-shrink: 1;
-  }
-
-  .navbar-logo-text {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-cream-warm);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-    /* Italic para personalidad de Fraunces */
-    font-style: italic;
-  }
-
-  /* Nav */
-  .navbar-nav {
     display: flex;
     align-items: center;
-    gap: 0.125rem;
+    gap: 0.5rem;
+    text-decoration: none;
     flex-shrink: 0;
   }
 
-  .navbar-link {
-    font-family: var(--font-body);
+  .logo-mark {
+    color: var(--color-fire);
+    font-size: 0.875rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--color-cream-warm);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* ─── Desktop nav (shown ≥ 640px) ────────────────────── */
+  .navbar-desktop-nav {
+    display: none; /* hidden on mobile */
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .navbar-desktop-nav { display: flex; }
+    .hamburger           { display: none; }
+  }
+
+  .nav-link {
     font-size: 0.8125rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--color-text-muted-light);
     text-decoration: none;
-    padding: 0.5rem 0.625rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 4px;
     transition: color 0.15s ease;
-    /* Touch target mínimo */
     min-height: 40px;
     display: flex;
     align-items: center;
   }
 
-  .navbar-link:hover,
-  .navbar-link:focus-visible {
+  .nav-link:hover { color: var(--color-cream-warm); }
+
+  /* ─── Hamburger button ─────────────────────────────────── */
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease;
+  }
+
+  .hamburger:hover {
+    background-color: rgb(255 255 255 / 0.06);
+  }
+
+  .ham-line {
+    display: block;
+    width: 100%;
+    height: 1.5px;
+    background-color: var(--color-cream-warm);
+    border-radius: 2px;
+    transform-origin: center;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  /* X state when open */
+  .hamburger.is-open .ham-line:nth-child(1) {
+    transform: translateY(6.5px) rotate(45deg);
+  }
+  .hamburger.is-open .ham-line:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  .hamburger.is-open .ham-line:nth-child(3) {
+    transform: translateY(-6.5px) rotate(-45deg);
+  }
+
+  /* ─── Mobile menu panel ────────────────────────────────── */
+  .mobile-menu {
+    background-color: var(--color-ink);
+    border-top: 1px solid var(--color-border-dark);
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease;
+    /* Hidden on desktop */
+  }
+
+  @media (min-width: 640px) {
+    .mobile-menu { display: none; }
+  }
+
+  .mobile-menu.is-open {
+    max-height: 320px;
+  }
+
+  .mobile-menu-inner {
+    display: flex;
+    flex-direction: column;
+    padding-block: 0.5rem 1rem;
+    gap: 0;
+  }
+
+  .mobile-link {
+    display: flex;
+    align-items: center;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-style: italic;
     color: var(--color-cream-warm);
+    text-decoration: none;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--color-border-dark);
+    transition: color 0.15s ease;
+    min-height: 52px;
+  }
+
+  .mobile-link:last-child { border-bottom: none; }
+
+  .mobile-link:hover,
+  .mobile-link:focus-visible {
+    color: var(--color-fire-light);
+  }
+
+  /* ─── Backdrop ─────────────────────────────────────────── */
+  .nav-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 0.4);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-backdrop.is-visible {
+    display: block;
+    opacity: 1;
+  }
+
+  @media (min-width: 640px) {
+    .nav-backdrop { display: none !important; }
   }
 </style>

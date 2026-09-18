@@ -1,7 +1,7 @@
 ---
-// TodaySection.astro — Sección HOY (rediseño editorial)
-import type { FeriaDay } from "../data/feria";
-import ActivityRow from "./ActivityRow.astro";
+// TodaySection.astro — ¿Qué hay hoy?
+// Actividad destacada (con foto si existe) + lista compacta de las demás
+import type { FeriaDay, Activity } from "../data/feria";
 
 interface Props {
   day: FeriaDay;
@@ -11,128 +11,168 @@ interface Props {
 
 const { day, dayIndex, totalDays } = Astro.props;
 
-const fullDate = new Date(day.date + "T12:00:00");
+const fullDate     = new Date(day.date + "T12:00:00");
 const weekdayLong  = fullDate.toLocaleDateString("es-HN", { weekday: "long" });
 const weekdayCap   = weekdayLong.charAt(0).toUpperCase() + weekdayLong.slice(1);
 const monthName    = fullDate.toLocaleDateString("es-HN", { month: "long" });
-const dayNumber    = day.dayNumber;
 const dayOrdinal   = dayIndex + 1;
 
-// Determinar la actividad "próxima" basándonos en la hora actual
-// En producción esto usaría la hora real; aquí lo simulamos con la primera actividad
-const now = new Date();
-const nowMinutes = now.getHours() * 60 + now.getMinutes();
+// Pick the featured activity; fallback to the first one
+const featuredActivity: Activity =
+  day.activities.find((a) => a.featured) ?? day.activities[0];
 
-function parseTime(timeStr: string): number {
-  const [timePart, ampm] = timeStr.split(" ");
-  let [h, m] = timePart.split(":").map(Number);
-  if (ampm === "PM" && h !== 12) h += 12;
-  if (ampm === "AM" && h === 12) h = 0;
-  return h * 60 + (m || 0);
-}
+// Secondary activities = the rest (excluding the featured one)
+const secondaryActivities = day.activities.filter((a) => a !== featuredActivity);
 
-let nextActivityIndex = -1;
-for (let i = 0; i < day.activities.length; i++) {
-  const actMinutes = parseTime(day.activities[i].time);
-  if (actMinutes > nowMinutes) {
-    nextActivityIndex = i;
-    break;
-  }
-}
-// Si todas pasaron, no marcamos ninguna; si ninguna empezó aún, marcamos la primera
-if (nextActivityIndex === -1 && nowMinutes < parseTime(day.activities[0].time)) {
-  nextActivityIndex = 0;
-}
+// Category label map (no pill — just the text for accessibility)
+const categoryLabels: Record<string, string> = {
+  cultural: "Cultural", religioso: "Religioso", musical: "Musical",
+  deportivo: "Deportivo", tradicional: "Tradicional", desfile: "Desfile",
+};
 ---
 
-<section id="hoy" class="today-section section-light" aria-label="Actividades de hoy">
+<section id="hoy" class="today-section" aria-label="Actividades de hoy">
   <div class="container">
 
-    <!-- Header de sección: label + identidad del día -->
+    <!-- ── Section header ─────────────────────── -->
     <div class="today-header">
       <div class="today-header-left">
-        <p class="section-eyebrow today-eyebrow">¿Qué hay hoy?</p>
-        <p class="today-day-label">Día {dayOrdinal} de {totalDays}</p>
+        <p class="section-eyebrow">¿Qué hay hoy?</p>
+        <p class="today-day-sub">Día {dayOrdinal} de {totalDays}</p>
       </div>
-      <div class="today-header-right" aria-label={`${weekdayCap} ${dayNumber} de ${monthName}`}>
+      <div class="today-date-block" aria-label={`${weekdayCap} ${day.dayNumber} de ${monthName}`}>
         <span class="today-weekday">{weekdayCap}</span>
-        <span class="today-number">{dayNumber}</span>
+        <span class="today-number">{day.dayNumber}</span>
         <span class="today-month">{monthName}</span>
       </div>
     </div>
 
-    <!-- Divider -->
-    <hr class="section-divider today-divider" />
-
-    <!-- Lista de actividades -->
-    <div role="list" aria-label={`Actividades del ${weekdayCap} ${dayNumber}`} class="today-list">
-      {day.activities.map((act, i) => (
-        <div role="listitem">
-          <ActivityRow
-            activity={act}
-            isNext={i === nextActivityIndex}
-          />
-        </div>
-      ))}
+    <!-- ── Featured activity ─────────────────── -->
+    <div class="featured-wrap">
+      {featuredActivity.image ? (
+        <article class="featured-card featured-card--photo" aria-label={`Actividad destacada: ${featuredActivity.title}`}>
+          <div class="featured-img-wrap">
+            <img
+              src={featuredActivity.image}
+              alt={featuredActivity.title}
+              class="featured-img"
+              loading="lazy"
+              width="800"
+              height="534"
+            />
+            <!-- Category tag on the image -->
+            <span class="featured-category-tag">
+              {categoryLabels[featuredActivity.category]}
+            </span>
+          </div>
+          <div class="featured-body">
+            <p class="featured-time">{featuredActivity.time}</p>
+            <h2 class="featured-title">{featuredActivity.title}</h2>
+            <p class="featured-location">
+              <svg class="loc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
+              </svg>
+              {featuredActivity.location}
+            </p>
+          </div>
+        </article>
+      ) : (
+        <article class="featured-card featured-card--editorial" aria-label={`Actividad destacada: ${featuredActivity.title}`}>
+          <div class="featured-editorial-time">{featuredActivity.time}</div>
+          <div class="featured-editorial-body">
+            <p class="featured-editorial-category">{categoryLabels[featuredActivity.category]}</p>
+            <h2 class="featured-editorial-title">{featuredActivity.title}</h2>
+            <p class="featured-location featured-editorial-loc">
+              <svg class="loc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
+              </svg>
+              {featuredActivity.location}
+            </p>
+          </div>
+        </article>
+      )}
     </div>
+
+    <!-- ── Secondary activities list ─────────── -->
+    {secondaryActivities.length > 0 && (
+      <div class="secondary-activities" role="list" aria-label="Otras actividades del día">
+        {secondaryActivities.map((act) => (
+          <div class="secondary-row" role="listitem">
+            <span class="secondary-time">{act.time}</span>
+            <div class="secondary-body">
+              <span class="secondary-title">{act.title}</span>
+              <span class="secondary-loc">
+                <svg class="loc-icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
+                </svg>
+                {act.location}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
 
   </div>
 </section>
 
 <style>
   .today-section {
-    padding-block: 3rem 3.5rem;
-    border-top: 1px solid var(--color-border-light);
+    background-color: var(--color-cream);
+    padding-block: 3rem;
   }
 
-  /* ─── Section header ─────────────────────────────── */
+  /* ─── Header ────────────────────────────────── */
   .today-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1.25rem;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
   }
 
   .today-header-left {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    padding-top: 0.25rem;
+    gap: 0.2rem;
+    padding-top: 0.2rem;
   }
 
-  .today-eyebrow {
+  .section-eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--color-text-muted-dark);
     margin: 0;
   }
 
-  .today-day-label {
-    font-size: 0.875rem;
+  .today-day-sub {
+    font-size: 0.8125rem;
     color: var(--color-text-muted-dark);
     margin: 0;
   }
 
-  .today-header-right {
+  .today-date-block {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    line-height: 1;
-    gap: 0.1rem;
     flex-shrink: 0;
+    line-height: 1;
+    gap: 0.05rem;
   }
 
   .today-weekday {
     font-family: var(--font-display);
-    font-size: clamp(1.75rem, 8vw, 2.5rem);
+    font-size: clamp(1.5rem, 7vw, 2.25rem);
     font-weight: 800;
     color: var(--color-fire);
     letter-spacing: -0.02em;
-    line-height: 1;
   }
 
   .today-number {
     font-family: var(--font-display);
-    font-size: clamp(3rem, 14vw, 5rem);
+    font-size: clamp(2.75rem, 13vw, 4.5rem);
     font-weight: 900;
     line-height: 0.85;
     color: var(--color-text-dark);
@@ -140,20 +180,221 @@ if (nextActivityIndex === -1 && nowMinutes < parseTime(day.activities[0].time)) 
   }
 
   .today-month {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 500;
     color: var(--color-text-muted-dark);
     text-transform: capitalize;
     letter-spacing: 0.04em;
   }
 
-  /* ─── Divider ────────────────────────────────────── */
-  .today-divider {
+  /* ─── Featured card: with photo ─────────────── */
+  .featured-wrap {
     margin-bottom: 0;
   }
 
-  /* ─── List ───────────────────────────────────────── */
-  .today-list {
-    /* El padding crea espacio visual alrededor de la lista */
+  .featured-card {
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--color-surface, #fff);
+  }
+
+  .featured-card--photo {
+    border: 1px solid var(--color-border-light);
+  }
+
+  .featured-img-wrap {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
+  .featured-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: scale 0.4s ease;
+  }
+
+  .featured-card:hover .featured-img {
+    scale: 1.03;
+  }
+
+  .featured-category-tag {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    background: var(--color-fire);
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2em 0.6em;
+    border-radius: 3px;
+  }
+
+  .featured-body {
+    padding: 1rem 1.125rem 1.25rem;
+  }
+
+  .featured-time {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-fire);
+    margin: 0 0 0.35rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .featured-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 5vw, 1.75rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--color-text-dark);
+    margin: 0 0 0.5rem;
+  }
+
+  .featured-location {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted-dark);
+    margin: 0;
+  }
+
+  .loc-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+    color: var(--color-text-muted-dark);
+    opacity: 0.6;
+  }
+
+  /* ─── Featured card: editorial (no photo) ────── */
+  .featured-card--editorial {
+    background: var(--color-ink-mid);
+    display: flex;
+    align-items: stretch;
+    min-height: 160px;
+  }
+
+  .featured-editorial-time {
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 4vw, 1.25rem);
+    font-weight: 800;
+    font-style: italic;
+    color: var(--color-fire);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    padding: 1.25rem 1rem;
+    background: var(--color-ink);
+    letter-spacing: -0.01em;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .featured-editorial-body {
+    flex: 1;
+    padding: 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.375rem;
+  }
+
+  .featured-editorial-category {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted-light);
+    margin: 0;
+  }
+
+  .featured-editorial-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 5vw, 1.75rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  .featured-editorial-loc {
+    color: var(--color-text-muted-light);
+  }
+
+  .featured-editorial-loc .loc-icon {
+    color: var(--color-text-muted-light);
+  }
+
+  /* ─── Secondary activities ───────────────────── */
+  .secondary-activities {
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .secondary-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--color-border-light);
+    min-height: 44px;
+  }
+
+  .secondary-time {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fire);
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: 4.5rem;
+    text-align: right;
+  }
+
+  .secondary-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .secondary-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text-dark);
+    line-height: 1.3;
+  }
+
+  .secondary-loc {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--color-text-muted-dark);
+    line-height: 1.4;
+  }
+
+  .loc-icon-sm {
+    width: 0.6875rem;
+    height: 0.6875rem;
+    flex-shrink: 0;
+    opacity: 0.5;
+  }
+
+  /* Globally declared custom property */
+  .today-section {
+    --color-surface: #ffffff;
   }
 </style>

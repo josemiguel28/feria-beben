@@ -1,5 +1,5 @@
 ---
-// NavBar.astro — Mobile-first: logo + hamburger / Desktop: logo + nav links
+// NavBar.astro — Fondo claro, editorial, sin colores de UI
 interface Props {
   shortName: string;
 }
@@ -10,105 +10,94 @@ const { shortName } = Astro.props;
   <div class="navbar-inner container">
     <!-- Logo -->
     <a href="/" class="navbar-logo" aria-label={`${shortName} — Inicio`}>
-      <span class="logo-mark" aria-hidden="true">✦</span>
-      <span class="logo-text">{shortName}</span>
+      <img src="/logo.jpg" alt="Logo" class="logo-img" width="60" height="60" />
     </a>
 
-    <!-- Desktop nav (hidden on mobile) -->
-    <nav class="navbar-desktop-nav" aria-label="Navegación principal">
-      <a href="#hoy"     class="nav-link">Hoy</a>
+    <!-- Desktop nav links -->
+    <nav class="navbar-nav" aria-label="Navegación principal">
+      <a href="#hoy" class="nav-link">Hoy</a>
       <a href="#proximo" class="nav-link">Programa</a>
-      <a href="#pueblo"  class="nav-link">El Pueblo</a>
-      <a href="#info"    class="nav-link">Info</a>
+      <a href="#pueblo" class="nav-link">El Pueblo</a>
+      <a href="#info" class="nav-link">Info</a>
     </nav>
 
-    <!-- Mobile: hamburger button -->
+    <!-- Mobile hamburger -->
     <button
       class="hamburger"
       id="nav-toggle"
-      aria-label="Abrir menú de navegación"
+      aria-label="Abrir menú"
       aria-expanded="false"
       aria-controls="mobile-menu"
       type="button"
     >
-      <!-- Hamburger icon — 3 lines -->
       <span class="ham-line" aria-hidden="true"></span>
       <span class="ham-line" aria-hidden="true"></span>
       <span class="ham-line" aria-hidden="true"></span>
     </button>
   </div>
 
-  <!-- Mobile menu panel -->
+  <!-- Mobile menu drawer -->
   <nav
     id="mobile-menu"
     class="mobile-menu"
     aria-label="Menú de navegación"
     aria-hidden="true"
   >
-    <div class="mobile-menu-inner container">
-      <a href="#hoy"     class="mobile-link" id="mnav-hoy">Hoy</a>
+    <div class="container">
+      <a href="#hoy" class="mobile-link" id="mnav-hoy">Hoy</a>
       <a href="#proximo" class="mobile-link" id="mnav-programa">Programa</a>
-      <a href="#pueblo"  class="mobile-link" id="mnav-pueblo">El Pueblo</a>
-      <a href="#info"    class="mobile-link" id="mnav-info">Información</a>
+      <a href="#pueblo" class="mobile-link" id="mnav-pueblo">El Pueblo</a>
+      <a href="#info" class="mobile-link" id="mnav-info">Información</a>
     </div>
   </nav>
 </header>
 
-<!-- Backdrop -->
 <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
 
 <script>
-  const toggle   = document.getElementById('nav-toggle')!;
-  const menu     = document.getElementById('mobile-menu')!;
-  const backdrop = document.getElementById('nav-backdrop')!;
-  const links    = menu.querySelectorAll('.mobile-link');
+  const toggle = document.getElementById("nav-toggle")!;
+  const menu = document.getElementById("mobile-menu")!;
+  const backdrop = document.getElementById("nav-backdrop")!;
+  const links = menu.querySelectorAll(".mobile-link");
 
-  function open() {
-    menu.classList.add('is-open');
-    backdrop.classList.add('is-visible');
-    toggle.setAttribute('aria-expanded', 'true');
-    menu.setAttribute('aria-hidden', 'false');
-    toggle.setAttribute('aria-label', 'Cerrar menú');
-    toggle.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-  }
+  const open = () => {
+    menu.classList.add("is-open");
+    backdrop.classList.add("is-visible");
+    toggle.setAttribute("aria-expanded", "true");
+    menu.setAttribute("aria-hidden", "false");
+    toggle.setAttribute("aria-label", "Cerrar menú");
+    toggle.classList.add("is-open");
+    document.body.style.overflow = "hidden";
+  };
 
-  function close() {
-    menu.classList.remove('is-open');
-    backdrop.classList.remove('is-visible');
-    toggle.setAttribute('aria-expanded', 'false');
-    menu.setAttribute('aria-hidden', 'true');
-    toggle.setAttribute('aria-label', 'Abrir menú de navegación');
-    toggle.classList.remove('is-open');
-    document.body.style.overflow = '';
-  }
+  const close = () => {
+    menu.classList.remove("is-open");
+    backdrop.classList.remove("is-visible");
+    toggle.setAttribute("aria-expanded", "false");
+    menu.setAttribute("aria-hidden", "true");
+    toggle.setAttribute("aria-label", "Abrir menú");
+    toggle.classList.remove("is-open");
+    document.body.style.overflow = "";
+  };
 
-  toggle.addEventListener('click', () => {
-    const isOpen = menu.classList.contains('is-open');
-    isOpen ? close() : open();
-  });
-
-  backdrop.addEventListener('click', close);
-
-  // Close on link tap (anchor navigation)
-  links.forEach(link => {
-    link.addEventListener('click', close);
-  });
-
-  // Close on Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && menu.classList.contains('is-open')) close();
+  toggle.addEventListener("click", () =>
+    menu.classList.contains("is-open") ? close() : open(),
+  );
+  backdrop.addEventListener("click", close);
+  links.forEach((l) => l.addEventListener("click", close));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
   });
 </script>
 
 <style>
-  /* ─── Navbar shell ─────────────────────────────────────── */
+  /* ─── Shell ───────────────────────────────────── */
   .navbar {
     position: sticky;
     top: 0;
     z-index: 100;
-    background-color: var(--color-ink);
-    border-bottom: 1px solid var(--color-border-dark);
+    background-color: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .navbar-inner {
@@ -119,7 +108,7 @@ const { shortName } = Astro.props;
     gap: 1rem;
   }
 
-  /* ─── Logo ─────────────────────────────────────────────── */
+  /* ─── Logo ────────────────────────────────────── */
   .navbar-logo {
     display: flex;
     align-items: center;
@@ -128,53 +117,61 @@ const { shortName } = Astro.props;
     flex-shrink: 0;
   }
 
+  /* Pequeño acento naranja — único color de identidad en el nav */
   .logo-mark {
-    color: var(--color-fire);
-    font-size: 0.875rem;
-    line-height: 1;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--color-accent);
     flex-shrink: 0;
   }
 
   .logo-text {
-    font-family: var(--font-display);
-    font-size: 0.9375rem;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
     font-weight: 700;
-    font-style: italic;
-    color: var(--color-cream-warm);
+    color: var(--color-ink);
     line-height: 1;
     white-space: nowrap;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
   }
 
-  /* ─── Desktop nav (shown ≥ 640px) ────────────────────── */
-  .navbar-desktop-nav {
-    display: none; /* hidden on mobile */
+  /* ─── Desktop nav ─────────────────────────────── */
+  .navbar-nav {
+    display: none;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0;
   }
 
   @media (min-width: 640px) {
-    .navbar-desktop-nav { display: flex; }
-    .hamburger           { display: none; }
+    .navbar-nav {
+      display: flex;
+    }
+    .hamburger {
+      display: none;
+    }
   }
 
   .nav-link {
+    font-family: var(--font-body);
     font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--color-text-muted-light);
+    font-weight: 500;
+    color: var(--color-muted);
     text-decoration: none;
     padding: 0.5rem 0.75rem;
     border-radius: 4px;
     transition: color 0.15s ease;
-    min-height: 40px;
+    min-height: 44px;
     display: flex;
     align-items: center;
   }
 
-  .nav-link:hover { color: var(--color-cream-warm); }
+  .nav-link:hover {
+    color: var(--color-ink);
+  }
 
-  /* ─── Hamburger button ─────────────────────────────────── */
+  /* ─── Hamburger ───────────────────────────────── */
   .hamburger {
     display: flex;
     flex-direction: column;
@@ -186,26 +183,27 @@ const { shortName } = Astro.props;
     border: none;
     cursor: pointer;
     padding: 10px;
-    border-radius: 6px;
+    border-radius: 4px;
     flex-shrink: 0;
     transition: background-color 0.15s ease;
   }
 
   .hamburger:hover {
-    background-color: rgb(255 255 255 / 0.06);
+    background-color: rgb(0 0 0 / 0.04);
   }
 
   .ham-line {
     display: block;
     width: 100%;
     height: 1.5px;
-    background-color: var(--color-cream-warm);
+    background-color: var(--color-ink);
     border-radius: 2px;
     transform-origin: center;
-    transition: transform 0.25s ease, opacity 0.2s ease;
+    transition:
+      transform 0.25s ease,
+      opacity 0.2s ease;
   }
 
-  /* X state when open */
   .hamburger.is-open .ham-line:nth-child(1) {
     transform: translateY(6.5px) rotate(45deg);
   }
@@ -217,59 +215,58 @@ const { shortName } = Astro.props;
     transform: translateY(-6.5px) rotate(-45deg);
   }
 
-  /* ─── Mobile menu panel ────────────────────────────────── */
+  /* ─── Mobile menu ─────────────────────────────── */
   .mobile-menu {
-    background-color: var(--color-ink);
-    border-top: 1px solid var(--color-border-dark);
+    background-color: var(--color-bg);
+    border-top: 1px solid var(--color-border);
     overflow: hidden;
     max-height: 0;
-    transition: max-height 0.3s ease;
-    /* Hidden on desktop */
+    transition: max-height 0.28s ease;
   }
 
   @media (min-width: 640px) {
-    .mobile-menu { display: none; }
+    .mobile-menu {
+      display: none;
+    }
   }
 
   .mobile-menu.is-open {
-    max-height: 320px;
+    max-height: 300px;
   }
 
-  .mobile-menu-inner {
+  .mobile-menu .container {
     display: flex;
     flex-direction: column;
     padding-block: 0.5rem 1rem;
-    gap: 0;
   }
 
   .mobile-link {
     display: flex;
     align-items: center;
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 700;
-    font-style: italic;
-    color: var(--color-cream-warm);
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-ink);
     text-decoration: none;
     padding: 0.625rem 0;
-    border-bottom: 1px solid var(--color-border-dark);
-    transition: color 0.15s ease;
+    border-bottom: 1px solid var(--color-border);
     min-height: 52px;
+    transition: color 0.15s ease;
   }
 
-  .mobile-link:last-child { border-bottom: none; }
-
-  .mobile-link:hover,
-  .mobile-link:focus-visible {
-    color: var(--color-fire-light);
+  .mobile-link:last-child {
+    border-bottom: none;
+  }
+  .mobile-link:hover {
+    color: var(--color-accent);
   }
 
-  /* ─── Backdrop ─────────────────────────────────────────── */
+  /* ─── Backdrop ────────────────────────────────── */
   .nav-backdrop {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgb(0 0 0 / 0.4);
+    background: rgb(0 0 0 / 0.25);
     z-index: 99;
     opacity: 0;
     transition: opacity 0.2s ease;
@@ -281,6 +278,8 @@ const { shortName } = Astro.props;
   }
 
   @media (min-width: 640px) {
-    .nav-backdrop { display: none !important; }
+    .nav-backdrop {
+      display: none !important;
+    }
   }
 </style>

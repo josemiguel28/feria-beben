@@ -133,6 +133,8 @@ export const feria: FeriaInfo = {
           location: "Plaza Municipal",
           category: "musical",
           featured: true,
+          image: "/images/activity-musica.jpg",
+
         },
       ],
     },
@@ -154,6 +156,8 @@ export const feria: FeriaInfo = {
           location: "Iglesia de Belén",
           category: "religioso",
           featured: true,
+          image: "/images/activity-musica.jpg",
+
         },
         {
           time: "2:00 PM",
@@ -187,6 +191,8 @@ export const feria: FeriaInfo = {
           location: "Carretera principal",
           category: "tradicional",
           featured: true,
+          image: "/images/activity-musica.jpg",
+
         },
         {
           time: "7:00 PM",
@@ -226,6 +232,8 @@ export const feria: FeriaInfo = {
           location: "Plaza Municipal",
           category: "cultural",
           featured: true,
+          image: "/images/activity-musica.jpg",
+
         },
         {
           time: "10:00 PM",
@@ -275,6 +283,8 @@ export const feria: FeriaInfo = {
           location: "Plaza Municipal",
           category: "gastronomico",
           featured: true,
+          image: "/images/activity-musica.jpg",
+
         },
         {
           time: "9:00 AM",

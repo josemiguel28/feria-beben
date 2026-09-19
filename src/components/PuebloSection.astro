@@ -1,63 +1,66 @@
 ---
-// PuebloSection.astro — Descubre el pueblo · Tabs interactivas por categoría
+// PuebloSection.astro — Descubre el pueblo
+// Tabs editoriales (underline naranja) · Cards sobrias · Sin colores de UI
 import {
   restaurants, cafes, hotels, landmarks,
   type Place,
 } from "../data/feria";
 
-// Definición de categorías
 const CATEGORIES = [
-  { id: "comer",     emoji: "🍽️", label: "Comer",     places: restaurants, isLandmark: false },
-  { id: "cafes",     emoji: "☕",  label: "Cafeterías", places: cafes,       isLandmark: false },
-  { id: "hospedaje", emoji: "🛏️", label: "Hospedaje",  places: hotels,      isLandmark: false },
-  { id: "lugares",   emoji: "📍",  label: "Lugares",    places: landmarks,   isLandmark: true  },
+  { id: "comer",     label: "Comer",     places: restaurants, isLandmark: false },
+  { id: "cafes",     label: "Cafeterías", places: cafes,      isLandmark: false },
+  { id: "hospedaje", label: "Hospedaje",  places: hotels,     isLandmark: false },
+  { id: "lugares",   label: "Lugares",    places: landmarks,  isLandmark: true  },
 ] as const;
+
+// SVG icons — outline, stroke-width 1.5, sin relleno, heredan color del padre
+const ICON: Record<string, string> = {
+  comer: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v5a3 3 0 0 0 3 3v9"/><path d="M14 2v16"/><path d="M14 2a4 4 0 0 1 0 8"/></svg>`,
+  cafes: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h8v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V10Z"/><path d="M12 11h2a3 3 0 0 1 0 6h-2"/><path d="M6 5V3M9 5V2M12 5V3"/></svg>`,
+  hospedaje: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="11" width="16" height="6" rx="1"/><path d="M2 17v2M18 17v2"/><path d="M2 14h16"/><path d="M5 11V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/><rect x="7" y="8" width="3" height="3" rx="0.5"/></svg>`,
+  lugares: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2a6 6 0 0 0-6 6c0 4 6 11 6 11s6-7 6-11a6 6 0 0 0-6-6Z"/><circle cx="10" cy="8" r="2"/></svg>`,
+  // Iconos utilitarios (16px viewBox)
+  pin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2A4 4 0 0 0 4 6c0 3 4 8 4 8s4-5 4-8a4 4 0 0 0-4-4Z"/><circle cx="8" cy="6" r="1.5"/></svg>`,
+  clock: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>`,
+  arrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M7 3l3 3-3 3"/></svg>`,
+};
 ---
 
 <section id="pueblo" class="pueblo-section" aria-label="Descubre el pueblo">
+  <div class="container">
 
-  <!-- ── Intro + tabs (fondo oscuro) ──────────────── -->
-  <div class="pueblo-intro">
-    <div class="container">
+    <!-- ── Encabezado ─────────────────────────────── -->
+    <header class="pueblo-header">
       <p class="pueblo-eyebrow">¿Dónde puedo ir?</p>
-      <h2 class="pueblo-title">
-        Descubre<br />el pueblo
-      </h2>
+      <h2 class="pueblo-title">Descubre el pueblo</h2>
       <p class="pueblo-subtitle">
         Todo lo que necesitas a mano durante la feria.
       </p>
-    </div>
+    </header>
 
-    <!-- Tab strip: puente visual entre intro y contenido -->
-    <div class="pueblo-tabs-wrap">
-      <div class="container">
-        <div
-          class="pueblo-tabs"
-          role="tablist"
-          aria-label="Explorar lugares por categoría"
-          id="pueblo-tablist"
+    <!-- ── Tabs — estilo editorial con línea naranja ─ -->
+    <div
+      class="pueblo-tabs"
+      role="tablist"
+      aria-label="Filtrar por categoría"
+    >
+      {CATEGORIES.map((cat, i) => (
+        <button
+          class:list={["pueblo-tab", { "is-active": i === 0 }]}
+          role="tab"
+          type="button"
+          id={`tab-${cat.id}`}
+          data-cat={cat.id}
+          aria-selected={i === 0 ? "true" : "false"}
+          aria-controls={`panel-${cat.id}`}
         >
-          {CATEGORIES.map((cat, i) => (
-            <button
-              class:list={["pueblo-tab", { "is-active": i === 0 }]}
-              role="tab"
-              type="button"
-              id={`tab-${cat.id}`}
-              data-cat={cat.id}
-              aria-selected={i === 0 ? "true" : "false"}
-              aria-controls={`panel-${cat.id}`}
-            >
-              <span class="tab-emoji" aria-hidden="true">{cat.emoji}</span>
-              <span class="tab-label">{cat.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+          <span class="tab-icon" set:html={ICON[cat.id]} aria-hidden="true" />
+          <span class="tab-label">{cat.label}</span>
+        </button>
+      ))}
     </div>
-  </div>
 
-  <!-- ── Paneles de contenido (fondo claro) ────────── -->
-  <div class="pueblo-content">
+    <!-- ── Paneles de contenido ───────────────────── -->
     {CATEGORIES.map((cat, i) => (
       <div
         class:list={["pueblo-panel", { "is-active": i === 0 }]}
@@ -67,7 +70,9 @@ const CATEGORIES = [
         aria-labelledby={`tab-${cat.id}`}
       >
         {cat.isLandmark ? (
-          <div class="landmarks-list container">
+
+          /* ── Lugares: cards apiladas verticalmente, foto protagonista ── */
+          <div class="landmarks-list">
             {cat.places.map((place) => (
               <article class="landmark-card">
                 <div class="landmark-photo-wrap">
@@ -79,398 +84,392 @@ const CATEGORIES = [
                     width="800"
                     height="534"
                   />
-                  <div class="landmark-photo-scrim" aria-hidden="true"></div>
-                  <h3 class="landmark-name-overlay">{place.name}</h3>
                 </div>
                 <div class="landmark-body">
+                  <h3 class="landmark-name">{place.name}</h3>
                   <p class="landmark-tagline">{place.tagline}</p>
                   <p class="landmark-desc">{place.description}</p>
                   <a
                     href={place.mapsUrl ?? "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="map-cta"
-                    aria-label={`Ver ubicación de ${place.name} en el mapa`}
+                    class="place-dir-cta"
+                    aria-label={`Cómo llegar a ${place.name}`}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="map-cta-icon" aria-hidden="true">
-                      <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd"/>
-                    </svg>
                     Cómo llegar
+                    <span class="cta-arrow" set:html={ICON.arrow} aria-hidden="true" />
                   </a>
                 </div>
               </article>
             ))}
           </div>
+
         ) : (
+
+          /* ── Carrusel horizontal ─────────────────────────────────────── */
           <div class="carousel-outer">
-            <ul
-              class="carousel-track"
-              role="list"
-              aria-label={`Opciones: ${cat.label}`}
-            >
+            <ul class="carousel-track" role="list" aria-label={cat.label}>
               {cat.places.map((place) => (
                 <li class="carousel-item" role="listitem">
                   <article class="place-card">
-                    <div class="place-card-photo-wrap">
+                    <div class="place-photo-wrap">
                       <img
                         src={place.image}
                         alt={place.name}
-                        class="place-card-photo"
+                        class="place-photo"
                         loading="lazy"
                         width="600"
                         height="400"
                       />
                     </div>
-                    <div class="place-card-body">
-                      <div class="place-card-header">
-                        <h3 class="place-card-name">{place.name}</h3>
-                        <p class="place-card-tagline">{place.tagline}</p>
-                      </div>
-                      <p class="place-card-desc">{place.description}</p>
-                      <div class="place-card-footer">
+                    <div class="place-body">
+                      <h3 class="place-name">{place.name}</h3>
+                      <p class="place-tagline">{place.tagline}</p>
+                      <p class="place-desc">{place.description}</p>
+                      <div class="place-meta">
                         {place.hours && (
-                          <p class="place-card-hours">{place.hours}</p>
+                          <div class="place-meta-row">
+                            <span class="meta-icon" set:html={ICON.clock} aria-hidden="true" />
+                            <span class="place-hours">{place.hours}</span>
+                          </div>
                         )}
-                        <a
-                          href={place.mapsUrl ?? "#"}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="map-cta"
-                          aria-label={`Ver ubicación de ${place.name}`}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="map-cta-icon" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd"/>
-                          </svg>
-                          {place.address}
-                        </a>
+                        <div class="place-meta-row">
+                          <span class="meta-icon" set:html={ICON.pin} aria-hidden="true" />
+                          <span class="place-address">{place.address}</span>
+                        </div>
                       </div>
+                      <a
+                        href={place.mapsUrl ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="place-dir-cta"
+                        aria-label={`Ver ubicación de ${place.name}`}
+                      >
+                        Ver ubicación
+                        <span class="cta-arrow" set:html={ICON.arrow} aria-hidden="true" />
+                      </a>
                     </div>
                   </article>
                 </li>
               ))}
             </ul>
           </div>
+
         )}
       </div>
     ))}
-  </div>
 
+  </div>
 </section>
 
 <script>
-  // ── Tab switching logic ────────────────────────────────────────────────────
   const tabs   = Array.from(document.querySelectorAll<HTMLButtonElement>('.pueblo-tab'));
   const panels = Array.from(document.querySelectorAll<HTMLElement>('.pueblo-panel'));
 
-  function activateCategory(catId: string) {
-    tabs.forEach((tab) => {
-      const isActive = tab.dataset.cat === catId;
-      tab.classList.toggle('is-active', isActive);
-      tab.setAttribute('aria-selected', String(isActive));
+  function activate(catId: string) {
+    tabs.forEach(t => {
+      const on = t.dataset.cat === catId;
+      t.classList.toggle('is-active', on);
+      t.setAttribute('aria-selected', String(on));
     });
-
-    panels.forEach((panel) => {
-      panel.classList.toggle('is-active', panel.dataset.panel === catId);
+    panels.forEach(p => {
+      p.classList.toggle('is-active', p.dataset.panel === catId);
     });
   }
 
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      activateCategory(tab.dataset.cat!);
-    });
-  });
+  tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.cat!)));
 </script>
 
 <style>
-  /* ─── Sección completa ──────────────────────────── */
+  /* ─── Sección ────────────────────────────────────── */
   .pueblo-section {
-    background-color: var(--color-cream);
+    background-color: var(--color-bg);
+    padding-block: 3rem;
+    border-top: 1px solid var(--color-border);
   }
 
-  /* ─── Intro (fondo oscuro) ──────────────────────── */
-  .pueblo-intro {
-    background-color: var(--color-ink);
-    /* Sin padding-bottom: los tabs lo cierran */
-    padding-top: 3rem;
-  }
+  /* ─── Encabezado ─────────────────────────────────── */
+  .pueblo-header { margin-bottom: 2rem; }
 
   .pueblo-eyebrow {
+    font-family: var(--font-body);
     font-size: 0.6875rem;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-text-muted-light);
+    color: var(--color-muted);
     margin: 0 0 0.5rem;
   }
 
   .pueblo-title {
-    font-family: var(--font-display);
-    font-size: clamp(2.25rem, 9vw, 3.75rem);
+    font-family: var(--font-body);
+    font-size: clamp(1.75rem, 7vw, 2.5rem);
     font-weight: 800;
-    font-style: italic;
-    line-height: 0.95;
+    line-height: 1.1;
     letter-spacing: -0.025em;
-    color: var(--color-text-light);
-    margin: 0 0 0.75rem;
+    color: var(--color-ink);
+    margin: 0 0 0.5rem;
   }
 
   .pueblo-subtitle {
+    font-family: var(--font-body);
     font-size: 0.9375rem;
-    color: var(--color-text-muted-light);
+    color: var(--color-muted);
     margin: 0;
-    max-width: 36ch;
-    line-height: 1.55;
+    max-width: 42ch;
+    line-height: 1.5;
   }
 
-  /* ─── Tab strip ─────────────────────────────────── */
-  .pueblo-tabs-wrap {
-    margin-top: 1.75rem;
-    /* El strip está al borde inferior del bloque oscuro */
-    padding-bottom: 0;
-  }
-
+  /* ─── Tabs — navegación limpia y moderna ─────────── */
   .pueblo-tabs {
     display: flex;
-    gap: 0.5rem;
+    gap: 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding-bottom: 1px; /* previene el clip del borde inferior */
-    /* Los tabs se alinean al borde inferior del dark block */
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1.75rem;
   }
 
-  .pueblo-tabs::-webkit-scrollbar {
-    display: none;
-  }
+  .pueblo-tabs::-webkit-scrollbar { display: none; }
 
   .pueblo-tab {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.625rem 1.125rem;
-    min-height: 44px; /* touch target */
+    gap: 0.375rem;
+    padding: 0.625rem 0.875rem;
+    min-height: 44px;
     flex-shrink: 0;
-    border-radius: 8px 8px 0 0; /* esquinas redondeadas arriba, plano abajo */
-    border: 1.5px solid rgb(245 240 232 / 0.18);
-    border-bottom: none;
-    background: transparent;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
     cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: color 0.15s ease, border-color 0.15s ease;
 
-    /* Tipografía */
     font-family: var(--font-body);
     font-size: 0.875rem;
     font-weight: 600;
-    color: rgb(245 240 232 / 0.55);
+    color: var(--color-muted);
     white-space: nowrap;
   }
 
   .pueblo-tab:hover:not(.is-active) {
-    background: rgb(245 240 232 / 0.07);
-    border-color: rgb(245 240 232 / 0.3);
-    color: rgb(245 240 232 / 0.8);
+    color: var(--color-ink);
   }
 
-  /* Estado activo: tab "destapa" el contenido de abajo */
+  /* Activo: texto oscuro + pequeña línea naranja inferior */
   .pueblo-tab.is-active {
-    background-color: var(--color-cream);
-    border-color: var(--color-cream);
     color: var(--color-ink);
     font-weight: 700;
-    /* La sombra disimula la "unión" con el panel de abajo */
-    box-shadow: 0 2px 0 var(--color-cream);
+    border-bottom-color: var(--color-accent);
   }
 
-  .tab-emoji {
-    font-size: 1rem;
-    line-height: 1;
+  .tab-icon {
+    display: flex;
+    align-items: center;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
   }
 
-  /* ─── Área de contenido (fondo claro) ───────────── */
-  .pueblo-content {
-    background-color: var(--color-cream);
-    /*
-      Borde superior coincide con la línea visual del tab strip.
-      El tab activo tiene un box-shadow que "sella" la unión.
-    */
-    border-top: 1.5px solid rgb(245 240 232 / 0.18);
-  }
+  .tab-icon svg { width: 100%; height: 100%; }
 
-  /* ─── Paneles ────────────────────────────────────── */
-  .pueblo-panel {
-    display: none;
-    padding-block: 1.75rem 3rem;
-  }
+  .pueblo-tab.is-active .tab-icon  { opacity: 1; }
+  .pueblo-tab:hover:not(.is-active) .tab-icon { opacity: 0.85; }
+
+  /* ─── Paneles ─────────────────────────────────────── */
+  .pueblo-panel { display: none; }
 
   .pueblo-panel.is-active {
     display: block;
-    animation: panel-enter 0.2s ease;
+    animation: panel-in 0.18s ease;
   }
 
-  @keyframes panel-enter {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  @keyframes panel-in {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0);   }
   }
 
-  /* ─── Carrusel horizontal ────────────────────────── */
-  .carousel-outer {
-    overflow: hidden;
-  }
+  /* ─── Carrusel ────────────────────────────────────── */
+  .carousel-outer { overflow: hidden; }
 
   .carousel-track {
     display: flex;
-    gap: 0.875rem;
+    gap: 0.75rem;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding-inline: var(--page-px, 1.25rem);
-    /* Trailing padding crea el "peek" de la siguiente card */
-    padding-right: calc(var(--page-px, 1.25rem) + 1.5rem);
-    padding-bottom: 4px; /* espacio para shadow de card */
+    margin-inline: calc(-1 * var(--page-px));
+    padding-inline: var(--page-px);
+    padding-right: calc(var(--page-px) + 1.25rem); /* peek */
+    padding-bottom: 2px;
     list-style: none;
-    margin: 0;
+    margin-top: 0;
+    margin-bottom: 0;
   }
 
-  .carousel-track::-webkit-scrollbar {
-    display: none;
-  }
+  .carousel-track::-webkit-scrollbar { display: none; }
 
   .carousel-item {
-    /* Tamaño de card en mobile: ~73vw — muestra borde de la siguiente */
-    flex: 0 0 clamp(240px, 73vw, 300px);
+    flex: 0 0 clamp(232px, 71vw, 292px);
     scroll-snap-align: start;
   }
 
-  /* ─── Card de lugar ──────────────────────────────── */
+  /* ─── Card de lugar ───────────────────────────────── */
   .place-card {
-    background: #fff;
-    border-radius: 12px;
-    border: 1px solid var(--color-border-light);
+    background: var(--color-surface);
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
     overflow: hidden;
     height: 100%;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
   }
 
-  .place-card-photo-wrap {
+  .place-photo-wrap {
     aspect-ratio: 3 / 2;
     overflow: hidden;
     flex-shrink: 0;
   }
 
-  .place-card-photo {
+  .place-photo {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: scale 0.45s ease;
+    transition: transform 0.3s ease;
   }
 
-  .place-card:hover .place-card-photo {
-    scale: 1.04;
-  }
+  .place-card:hover .place-photo { transform: scale(1.03); }
 
-  .place-card-body {
-    padding: 0.875rem 1rem 1rem;
+  .place-body {
+    padding: 0.875rem 1rem 1.125rem;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0;
     flex: 1;
   }
 
-  .place-card-header {
-    margin-bottom: 0.2rem;
-  }
-
-  .place-card-name {
+  .place-name {
+    font-family: var(--font-body);
     font-size: 1.0625rem;
     font-weight: 700;
-    color: var(--color-text-dark);
-    margin: 0 0 0.125rem;
-    line-height: 1.2;
+    color: var(--color-ink);
+    margin: 0 0 0.2rem;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
   }
 
-  .place-card-tagline {
+  .place-tagline {
+    font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--color-fire);
-    margin: 0;
-    letter-spacing: 0.01em;
+    color: var(--color-accent);
+    margin: 0 0 0.5rem;
   }
 
-  .place-card-desc {
+  .place-desc {
+    font-family: var(--font-body);
     font-size: 0.8125rem;
-    color: var(--color-text-muted-dark);
+    color: var(--color-muted);
     margin: 0;
     line-height: 1.5;
     flex: 1;
   }
 
-  .place-card-footer {
-    margin-top: 0.625rem;
+  /* Meta (horario + dirección) */
+  .place-meta {
+    margin-top: 0.75rem;
     display: flex;
     flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .place-meta-row {
+    display: flex;
+    align-items: center;
     gap: 0.3rem;
   }
 
-  .place-card-hours {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-text-muted-dark);
-    margin: 0;
+  .meta-icon {
+    display: flex;
+    align-items: center;
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+    color: var(--color-muted);
+    opacity: 0.7;
   }
 
-  /* ─── CTA de ubicación ───────────────────────────── */
-  .map-cta {
+  .meta-icon svg { width: 100%; height: 100%; }
+
+  /* El reloj (horario) en naranja */
+  .place-meta-row:first-child .meta-icon { color: var(--color-accent); opacity: 1; }
+
+  .place-hours {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .place-address {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    line-height: 1.4;
+  }
+
+  /* ─── CTA de dirección ────────────────────────────── */
+  .place-dir-cta {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
+    margin-top: 0.75rem;
+    font-family: var(--font-body);
     font-size: 0.8125rem;
-    font-weight: 700;
-    color: var(--color-fire);
+    font-weight: 600;
+    color: var(--color-ink);
     text-decoration: none;
-    min-height: 36px;
-    padding: 0;
     transition: color 0.15s ease;
+    min-height: 36px;
   }
 
-  .map-cta:hover {
-    color: var(--color-fire-light);
-    text-decoration: underline;
-  }
+  .place-dir-cta:hover { color: var(--color-accent); }
 
-  .map-cta-icon {
-    width: 0.8125rem;
-    height: 0.8125rem;
+  .cta-arrow {
+    display: flex;
+    align-items: center;
+    width: 0.75rem;
+    height: 0.75rem;
     flex-shrink: 0;
+    color: var(--color-accent);
+    transition: transform 0.15s ease;
   }
 
-  /* ─── Cards de LUGARES ───────────────────────────── */
+  .cta-arrow svg { width: 100%; height: 100%; }
+
+  .place-dir-cta:hover .cta-arrow { transform: translateX(2px); }
+
+  /* ─── Landmark cards ──────────────────────────────── */
   .landmarks-list {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
   .landmark-card {
-    background: #fff;
-    border-radius: 14px;
+    background: var(--color-surface);
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
     overflow: hidden;
-    border: 1px solid var(--color-border-light);
-    box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
   }
 
-  /* Foto con nombre superpuesto */
   .landmark-photo-wrap {
-    position: relative;
     aspect-ratio: 16 / 9;
     overflow: hidden;
   }
@@ -480,107 +479,62 @@ const CATEGORIES = [
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: scale 0.5s ease;
+    transition: transform 0.3s ease;
   }
 
-  .landmark-card:hover .landmark-photo {
-    scale: 1.03;
-  }
+  .landmark-card:hover .landmark-photo { transform: scale(1.03); }
 
-  /* Gradiente sobre la foto para el nombre */
-  .landmark-photo-scrim {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to bottom,
-      transparent 40%,
-      rgb(15 10 5 / 0.75) 100%
-    );
-  }
-
-  /* Nombre superpuesto en la foto */
-  .landmark-name-overlay {
-    position: absolute;
-    bottom: 0.875rem;
-    left: 1rem;
-    right: 1rem;
-    font-family: var(--font-display);
-    font-size: clamp(1.25rem, 5.5vw, 1.625rem);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    color: #fff;
-    margin: 0;
-  }
-
-  /* Cuerpo del lugar */
   .landmark-body {
     padding: 1rem 1.125rem 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+  }
+
+  .landmark-name {
+    font-family: var(--font-body);
+    font-size: clamp(1.125rem, 4.5vw, 1.375rem);
+    font-weight: 700;
+    color: var(--color-ink);
+    margin: 0 0 0.25rem;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
   }
 
   .landmark-tagline {
-    font-size: 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-fire);
-    margin: 0;
+    color: var(--color-muted);
+    margin: 0 0 0.5rem;
   }
 
   .landmark-desc {
     font-size: 0.9375rem;
-    color: var(--color-text-muted-dark);
-    margin: 0 0 0.25rem;
+    color: var(--color-muted);
+    margin: 0 0 0.125rem;
     line-height: 1.55;
   }
 
-  /* ─── Responsive: tablet ─────────────────────────── */
-  @media (min-width: 600px) {
-    .carousel-item {
-      flex: 0 0 clamp(260px, 44vw, 320px);
-    }
-
+  /* ─── Responsive ──────────────────────────────────── */
+  @media (min-width: 580px) {
+    .carousel-item { flex: 0 0 clamp(252px, 43vw, 308px); }
     .landmarks-list {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  /* ─── Responsive: desktop ────────────────────────── */
   @media (min-width: 1024px) {
-    .pueblo-tabs {
-      gap: 0.625rem;
-      overflow-x: visible;
-    }
-
-    .pueblo-tab {
-      font-size: 0.9375rem;
-      padding: 0.75rem 1.375rem;
-    }
-
-    /* En desktop el carrusel se convierte en grid */
-    .carousel-outer {
-      overflow: visible;
-    }
-
+    .carousel-outer { overflow: visible; }
     .carousel-track {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       overflow-x: visible;
       scroll-snap-type: none;
-      padding-right: var(--page-px, 1.25rem);
+      margin-inline: 0;
+      padding-right: 0;
     }
-
-    .carousel-item {
-      flex: none;
-    }
-
-    .landmarks-list {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.75rem;
-    }
+    .carousel-item { flex: none; }
+    .pueblo-tabs   { flex-wrap: wrap; overflow-x: visible; }
   }
 </style>

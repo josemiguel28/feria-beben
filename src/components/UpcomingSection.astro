@@ -1,5 +1,5 @@
 ---
-// UpcomingSection.astro — Próximas actividades (fondo oscuro, estilo timeline)
+// UpcomingSection.astro — Próximas actividades (estilo editorial limpio)
 import type { FeriaDay } from "../data/feria";
 import ActivityRow from "./ActivityRow.astro";
 
@@ -8,9 +8,6 @@ interface Props {
 }
 
 const { days } = Astro.props;
-if (days.length === 0) {
-  // no renderizar nada
-}
 
 const [tomorrow, ...laterDays] = days;
 
@@ -31,7 +28,7 @@ const tomorrowFull = (day: FeriaDay) => {
 ---
 
 {days.length > 0 && (
-  <section id="proximo" class="upcoming-section section-dark" aria-label="Próximas actividades" style="scroll-margin-top: 56px;">
+  <section id="proximo" class="upcoming-section" aria-label="Próximas actividades" style="scroll-margin-top: 56px;">
     <div class="container">
 
       <!-- Header -->
@@ -87,16 +84,18 @@ const tomorrowFull = (day: FeriaDay) => {
 
 <style>
   .upcoming-section {
+    background-color: var(--color-bg);
+    border-top: 1px solid var(--color-border);
     padding-block: 3rem 3.5rem;
   }
 
   /* ─── Header ──────────────────────────────────────── */
   .upcoming-header {
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.5rem;
   }
 
   .upcoming-eyebrow {
-    color: var(--color-text-muted-light);
+    color: var(--color-muted);
     margin: 0;
   }
 
@@ -104,17 +103,17 @@ const tomorrowFull = (day: FeriaDay) => {
   .tomorrow-block {
     margin-bottom: 2rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--color-border-dark);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .tomorrow-title {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 6vw, 2.25rem);
+    font-family: var(--font-body);
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
     font-weight: 800;
-    color: var(--color-text-light);
-    margin: 0 0 1rem;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    color: var(--color-ink);
+    margin: 0 0 1.25rem;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -122,15 +121,16 @@ const tomorrowFull = (day: FeriaDay) => {
   }
 
   .tomorrow-label {
-    color: var(--color-gold);
-    font-style: italic;
+    color: var(--color-ink);
+    font-weight: 800;
   }
 
   .tomorrow-day {
-    font-size: 0.7em;
-    font-weight: 400;
-    color: var(--color-text-muted-light);
+    font-size: 0.8em;
+    font-weight: 500;
+    color: var(--color-muted);
     font-style: normal;
+    letter-spacing: 0;
   }
 
   /* ─── Días siguientes ─────────────────────────────── */
@@ -142,11 +142,11 @@ const tomorrowFull = (day: FeriaDay) => {
 
   /* details nativo */
   .later-day {
-    border-top: 1px solid var(--color-border-dark);
+    border-top: 1px solid var(--color-border);
   }
 
   .later-day:last-child {
-    border-bottom: 1px solid var(--color-border-dark);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .later-day-summary {
@@ -156,7 +156,7 @@ const tomorrowFull = (day: FeriaDay) => {
     padding: 0.9rem 0;
     cursor: pointer;
     list-style: none;
-    min-height: 44px;
+    min-height: 48px;
     user-select: none;
 
     &::-webkit-details-marker { display: none; }
@@ -164,35 +164,41 @@ const tomorrowFull = (day: FeriaDay) => {
   }
 
   .later-day-summary:hover .later-day-name {
-    color: var(--color-cream-warm);
+    color: var(--color-accent);
   }
 
   .later-day-name {
-    font-family: var(--font-display);
-    font-size: 1.125rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
     font-weight: 700;
-    color: var(--color-text-muted-light);
+    color: var(--color-ink);
     flex: 1;
+    letter-spacing: -0.01em;
     transition: color 0.15s ease;
   }
 
   .later-day-count {
+    font-family: var(--font-body);
     font-size: 0.75rem;
-    color: var(--color-text-muted-light);
-    opacity: 0.7;
+    font-weight: 500;
+    color: var(--color-muted);
     white-space: nowrap;
   }
 
   .later-chevron {
     width: 1rem;
     height: 1rem;
-    color: var(--color-text-muted-light);
+    color: var(--color-muted);
     flex-shrink: 0;
-    transition: rotate 0.2s ease;
+    transition: transform 0.2s ease, color 0.15s ease;
+  }
+
+  .later-day-summary:hover .later-chevron {
+    color: var(--color-ink);
   }
 
   details[open] .later-chevron {
-    rotate: 180deg;
+    transform: rotate(180deg);
   }
 
   .later-day-activities {

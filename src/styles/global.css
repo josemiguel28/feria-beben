@@ -1,41 +1,46 @@
-/* ─── Google Fonts — MUST come before @import tailwindcss ─── */
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,400;1,9..144,700&family=Inter:wght@400;500;600;700&display=swap");
+/* ─── Google Fonts ─────────────────────────────────────────────────────────── */
+/* Manrope — Tipografía ÚNICA para todo el sitio (400–800) */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
 
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════
-   DESIGN TOKENS
+   DESIGN TOKENS — MODERNO, LIMPIO, BLANCO Y SOBRIO
    ═══════════════════════════════════════════════════════════ */
 @theme {
-  /* ── Brand colors ─────────────────────────────────────── */
-  --color-ink:          #0F0A05;   /* negro cálido — hero, navbar, footer */
-  --color-ink-mid:      #1A1208;   /* marrón oscuro — secciones alternas */
-  --color-cream:        #FAFAF7;   /* blanco hueso — fondo general */
-  --color-cream-warm:   #F5F0E8;   /* crema — texto sobre oscuro */
-  --color-fire:         #E8620A;   /* naranja fuego — acento principal */
-  --color-fire-light:   #F97316;   /* naranja más vivo — hover, detalles */
-  --color-gold:         #F5C842;   /* amarillo maíz — acento secundario */
-  --color-gold-dim:     #D4A820;   /* dorado más apagado */
+  /* ── Paleta moderna ─────────────────────────────────────── */
+  --color-bg:           #FFFFFF;   /* fondo principal blanco */
+  --color-bg-subtle:    #F8F9FA;   /* gris sutil para alternar secciones */
+  --color-surface:      #FFFFFF;   /* tarjetas y superficies */
+  --color-ink:          #1C1B18;   /* texto principal */
+  --color-muted:        #6B7280;   /* texto secundario / gris */
+  --color-border:       #E5E7EB;   /* bordes modernos y sutiles */
+  --color-border-dark:  #374151;   /* bordes sobre fondos oscuros (footer) */
+  --color-accent:       #F05A16;   /* naranja moderno — único acento de UI */
+  --color-accent-hover: #D94806;   /* hover naranja */
 
-  /* ── Text ─────────────────────────────────────────────── */
-  --color-text-dark:    #1A1208;
-  --color-text-light:   #F5F0E8;
-  --color-text-muted-dark:  #6B6357;   /* sobre fondo claro */
-  --color-text-muted-light: #A09080;   /* sobre fondo oscuro */
+  /* ── Aliases de compatibilidad ──────────────────────────── */
+  --color-cream:        #FFFFFF;
+  --color-cream-warm:   #F8F9FA;
+  --color-white:        #FFFFFF;
+  --color-text-dark:    #1C1B18;
+  --color-text-light:   #F9FAFB;
+  --color-text-muted-dark:  #6B7280;
+  --color-text-muted-light: #9CA3AF;
+  --color-border-light: #E5E7EB;
+  --color-fire:         #F05A16;
+  --color-fire-light:   #D94806;
+  --color-gold:         #F05A16;
 
-  /* ── UI ───────────────────────────────────────────────── */
-  --color-border-light: #E8E2D9;
-  --color-border-dark:  #2C2216;
+  /* ── Tipografía: Manrope para TODO ──────────────────────── */
+  --font-display: "Manrope", system-ui, -apple-system, sans-serif;
+  --font-body:    "Manrope", system-ui, -apple-system, sans-serif;
 
-  /* ── Typography ───────────────────────────────────────── */
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body:    "Inter", system-ui, sans-serif;
+  /* ── Spacing ─────────────────────────────────────────────── */
+  --page-max:  560px;
+  --page-px:   1.25rem;
 
-  /* ── Spacing ──────────────────────────────────────────── */
-  --page-max:      560px;    /* máximo de columna de contenido */
-  --page-px:       1.25rem;  /* padding lateral estándar */
-
-  /* ── Transitions ─────────────────────────────────────── */
+  /* ── Transitions ─────────────────────────────────────────── */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -47,14 +52,13 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
-  /* Smooth scrolling with offset for sticky nav */
   scroll-padding-top: 56px;
 }
 
 body {
   font-family: var(--font-body);
-  background-color: var(--color-cream);
-  color: var(--color-text-dark);
+  background-color: var(--color-bg);
+  color: var(--color-ink);
   font-size: 1rem;
   line-height: 1.55;
   margin: 0;
@@ -76,16 +80,14 @@ img { display: block; max-width: 100%; }
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-fire);
+  outline: 2px solid var(--color-accent);
   outline-offset: 3px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   LAYOUT UTILITIES
+   LAYOUT
    ═══════════════════════════════════════════════════════════ */
-
-/* Contenedor de página: max-width centrado, padding lateral */
 .container {
   width: 100%;
   max-width: var(--page-max);
@@ -94,178 +96,101 @@ img { display: block; max-width: 100%; }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TYPOGRAPHIC SCALE
+   TYPOGRAPHIC SCALE (Manrope)
+   Headings: 700 / 800
+   Body / UI: 400 / 500 / 600
    ═══════════════════════════════════════════════════════════ */
-
 .display-xl {
   font-family: var(--font-display);
-  font-size: clamp(3rem, 12vw, 5.5rem);
+  font-size: clamp(2.5rem, 9.5vw, 4rem);
   font-weight: 800;
-  line-height: 0.95;
-  letter-spacing: -0.02em;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 
 .display-lg {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 8vw, 3.5rem);
+  font-size: clamp(1.75rem, 7vw, 2.75rem);
   font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
 }
 
 .display-md {
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 6vw, 2.5rem);
+  font-size: clamp(1.375rem, 5.5vw, 2rem);
   font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.01em;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .section-eyebrow {
   font-family: var(--font-body);
-  font-size: 0.6875rem;   /* 11px */
+  font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--color-muted);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   REUSABLE COMPONENTS
+   BUTTONS
    ═══════════════════════════════════════════════════════════ */
-
-/* Primary button */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--color-fire);
+  background-color: var(--color-accent);
   color: #fff;
   font-family: var(--font-body);
   font-size: 0.9375rem;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  border-radius: 8px;
   text-decoration: none;
   border: none;
   cursor: pointer;
-  transition: background-color 0.15s ease, translate 0.15s ease;
+  transition: background-color 0.15s ease, transform 0.15s ease;
   min-height: 48px;
+  letter-spacing: -0.005em;
 }
 
-.btn-primary:hover {
-  background-color: var(--color-fire-light);
-  translate: 0 -1px;
-}
+.btn-primary:hover  { background-color: var(--color-accent-hover); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
 
-.btn-primary:active {
-  translate: 0 0;
-}
-
-/* Ghost button (para fondos oscuros) */
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  color: var(--color-cream-warm);
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  text-decoration: none;
-  border: 1.5px solid rgb(245 240 232 / 0.35);
-  cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-  min-height: 48px;
-}
-
-.btn-ghost:hover {
-  border-color: rgb(245 240 232 / 0.7);
-  background: rgb(245 240 232 / 0.08);
-}
-
-/* Section divider line */
-.section-divider {
-  border: none;
-  border-top: 1px solid var(--color-border-light);
-  margin: 0;
-}
-
-.section-divider--dark {
-  border-top-color: var(--color-border-dark);
-}
-
-/* Pill / badge */
+/* ═══════════════════════════════════════════════════════════
+   BADGES
+   ═══════════════════════════════════════════════════════════ */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.25em 0.625em;
-  border-radius: 3px;
-  font-size: 0.6875rem;
+  padding: 0.25em 0.6em;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1;
 }
 
-.badge--fire {
-  background: var(--color-fire);
-  color: #fff;
+.badge--fire { background: var(--color-accent); color: #fff; }
+
+/* ═══════════════════════════════════════════════════════════
+   DIVIDERS & SECTIONS
+   ═══════════════════════════════════════════════════════════ */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 0;
 }
 
-.badge--gold {
-  background: var(--color-gold);
+.section-white {
+  background-color: var(--color-bg);
   color: var(--color-ink);
 }
 
-.badge--outline-light {
-  background: transparent;
-  border: 1px solid rgb(245 240 232 / 0.35);
-  color: var(--color-cream-warm);
+.section-subtle {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-ink);
 }
-
-/* ═══════════════════════════════════════════════════════════
-   SECTION STRUCTURE
-   ═══════════════════════════════════════════════════════════ */
-
-/* Sección clara */
-.section-light {
-  background-color: var(--color-cream);
-  color: var(--color-text-dark);
-}
-
-/* Sección oscura */
-.section-dark {
-  background-color: var(--color-ink-mid);
-  color: var(--color-text-light);
-}
-
-/* Padding vertical de sección */
-.section-py {
-  padding-block: 3.5rem;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ANIMATIONS
-   ═══════════════════════════════════════════════════════════ */
-
-@keyframes fadeUp {
-  from { opacity: 0; translate: 0 16px; }
-  to   { opacity: 1; translate: 0 0;   }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-.anim-fade-up {
-  animation: fadeUp 0.5s var(--ease-out) both;
-}
-
-.anim-delay-1 { animation-delay: 0.08s; }
-.anim-delay-2 { animation-delay: 0.16s; }
-.anim-delay-3 { animation-delay: 0.24s; }
-.anim-delay-4 { animation-delay: 0.32s; }
-.anim-delay-5 { animation-delay: 0.40s; }

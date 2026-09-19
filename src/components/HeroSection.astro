@@ -209,14 +209,15 @@ const nameTitle = `de ${nameParts.slice(1).join(" de ")}`; // "de Belén"
 
   /* Badge "Próximamente" — más discreto, sin fondo sólido */
   .hero-soon-badge {
+    font-family: var(--font-body);
     font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgb(245 240 232 / 0.7);
-    border: 1px solid rgb(245 240 232 / 0.25);
+    color: rgb(247 245 239 / 0.65);
+    border: 1px solid rgb(247 245 239 / 0.22);
     padding: 0.2em 0.625em;
-    border-radius: 3px;
+    border-radius: 4px;
   }
 
   /* ─── Título ─────────────────────────────────────── */
@@ -228,20 +229,20 @@ const nameTitle = `de ${nameParts.slice(1).join(" de ")}`; // "de Belén"
 
   .hero-pre {
     font-family: var(--font-body);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.18em;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-fire-light);
-    margin: 0 0 0.2rem;
+    color: var(--color-accent);
+    margin: 0 0 0.25rem;
   }
 
   .hero-title {
-    font-family: var(--font-display);
-    font-size: clamp(2.25rem, 10.5vw, 4.25rem);
-    font-weight: 900;
-    line-height: 0.92;
-    letter-spacing: -0.025em;
+    font-family: var(--font-body);
+    font-size: clamp(2.25rem, 10vw, 4rem);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
     color: #fff;
     margin: 0;
     display: flex;
@@ -255,8 +256,7 @@ const nameTitle = `de ${nameParts.slice(1).join(" de ")}`; // "de Belén"
 
   .hero-title-year {
     display: block;
-    color: var(--color-gold);
-    font-style: italic;
+    color: rgba(255, 255, 255, 0.85);
   }
 
   /* ─── Meta ───────────────────────────────────────── */

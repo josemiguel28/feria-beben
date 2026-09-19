@@ -74,14 +74,14 @@ export const feria: FeriaInfo = {
           title: "Inauguración de Feria con Desfile Carnaval",
           location: "Calles del pueblo",
           category: "desfile",
-          featured: true,
-          image: "/images/activity-desfile.jpg",
         },
         {
           time: "6:00 PM",
           title: "Presentación de la Banda Sinfónica de las Fuerzas Armadas",
           location: "Plaza Municipal",
           category: "musical",
+          featured: true,
+          image: "/images/activity-musica.jpg",
         },
         {
           time: "10:00 PM",

@@ -1,128 +1,145 @@
 ---
-// PuebloSection.astro — Descubre el pueblo
-// Cards fotográficas con scroll horizontal en mobile para cada categoría
+// PuebloSection.astro — Descubre el pueblo · Tabs interactivas por categoría
 import {
   restaurants, cafes, hotels, landmarks,
   type Place,
 } from "../data/feria";
 
-interface Category {
-  id:     string;
-  icon:   string;
-  label:  string;
-  places: Place[];
-  fullWidth?: boolean; // landmarks se muestra en cards verticales más grandes
-}
-
-const categories: Category[] = [
-  { id: "comer",     icon: "🍽️", label: "Dónde comer",       places: restaurants },
-  { id: "cafes",     icon: "☕",  label: "Cafeterías",          places: cafes       },
-  { id: "hospedaje", icon: "🛏️", label: "Hospedaje",           places: hotels      },
-  { id: "lugares",   icon: "📍",  label: "Lugares de interés",  places: landmarks, fullWidth: true },
-];
+// Definición de categorías
+const CATEGORIES = [
+  { id: "comer",     emoji: "🍽️", label: "Comer",     places: restaurants, isLandmark: false },
+  { id: "cafes",     emoji: "☕",  label: "Cafeterías", places: cafes,       isLandmark: false },
+  { id: "hospedaje", emoji: "🛏️", label: "Hospedaje",  places: hotels,      isLandmark: false },
+  { id: "lugares",   emoji: "📍",  label: "Lugares",    places: landmarks,   isLandmark: true  },
+] as const;
 ---
 
 <section id="pueblo" class="pueblo-section" aria-label="Descubre el pueblo">
 
-  <!-- ── Section intro (dark background, editorial) ─ -->
+  <!-- ── Intro + tabs (fondo oscuro) ──────────────── -->
   <div class="pueblo-intro">
     <div class="container">
-      <p class="section-eyebrow pueblo-eyebrow">¿Dónde puedo ir?</p>
+      <p class="pueblo-eyebrow">¿Dónde puedo ir?</p>
       <h2 class="pueblo-title">
-        Descubre<br/>el pueblo
+        Descubre<br />el pueblo
       </h2>
       <p class="pueblo-subtitle">
         Todo lo que necesitas a mano durante la feria.
       </p>
     </div>
+
+    <!-- Tab strip: puente visual entre intro y contenido -->
+    <div class="pueblo-tabs-wrap">
+      <div class="container">
+        <div
+          class="pueblo-tabs"
+          role="tablist"
+          aria-label="Explorar lugares por categoría"
+          id="pueblo-tablist"
+        >
+          {CATEGORIES.map((cat, i) => (
+            <button
+              class:list={["pueblo-tab", { "is-active": i === 0 }]}
+              role="tab"
+              type="button"
+              id={`tab-${cat.id}`}
+              data-cat={cat.id}
+              aria-selected={i === 0 ? "true" : "false"}
+              aria-controls={`panel-${cat.id}`}
+            >
+              <span class="tab-emoji" aria-hidden="true">{cat.emoji}</span>
+              <span class="tab-label">{cat.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- ── Categories ─────────────────────────────────── -->
-  <div class="pueblo-categories">
-    {categories.map((cat) => (
-      <div class="category-section" id={cat.id}>
-
-        <!-- Category label row -->
-        <div class="container">
-          <div class="category-header">
-            <span class="category-icon" aria-hidden="true">{cat.icon}</span>
-            <h3 class="category-title">{cat.label}</h3>
-          </div>
-        </div>
-
-        {cat.fullWidth ? (
-          <div class="container landmarks-list">
+  <!-- ── Paneles de contenido (fondo claro) ────────── -->
+  <div class="pueblo-content">
+    {CATEGORIES.map((cat, i) => (
+      <div
+        class:list={["pueblo-panel", { "is-active": i === 0 }]}
+        id={`panel-${cat.id}`}
+        data-panel={cat.id}
+        role="tabpanel"
+        aria-labelledby={`tab-${cat.id}`}
+      >
+        {cat.isLandmark ? (
+          <div class="landmarks-list container">
             {cat.places.map((place) => (
               <article class="landmark-card">
-                <div class="landmark-img-wrap">
+                <div class="landmark-photo-wrap">
                   <img
                     src={place.image}
                     alt={place.name}
-                    class="landmark-img"
+                    class="landmark-photo"
                     loading="lazy"
                     width="800"
                     height="534"
                   />
+                  <div class="landmark-photo-scrim" aria-hidden="true"></div>
+                  <h3 class="landmark-name-overlay">{place.name}</h3>
                 </div>
                 <div class="landmark-body">
-                  <div class="landmark-header">
-                    <h4 class="landmark-name">{place.name}</h4>
-                    <span class="landmark-tagline">{place.tagline}</span>
-                  </div>
-                  <p class="landmark-description">{place.description}</p>
+                  <p class="landmark-tagline">{place.tagline}</p>
+                  <p class="landmark-desc">{place.description}</p>
                   <a
                     href={place.mapsUrl ?? "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="place-map-link"
-                    aria-label={`Ver ubicación de ${place.name} en mapa`}
+                    class="map-cta"
+                    aria-label={`Ver ubicación de ${place.name} en el mapa`}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="map-link-icon" aria-hidden="true">
-                      <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="map-cta-icon" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd"/>
                     </svg>
-                    {place.address}
+                    Cómo llegar
                   </a>
                 </div>
               </article>
             ))}
           </div>
         ) : (
-          <div class="scroll-track-wrapper">
+          <div class="carousel-outer">
             <ul
-              class="scroll-track"
+              class="carousel-track"
               role="list"
-              aria-label={`Lista de ${cat.label}`}
+              aria-label={`Opciones: ${cat.label}`}
             >
               {cat.places.map((place) => (
-                <li class="place-card-wrap" role="listitem">
+                <li class="carousel-item" role="listitem">
                   <article class="place-card">
-                    <div class="place-card-img-wrap">
+                    <div class="place-card-photo-wrap">
                       <img
                         src={place.image}
                         alt={place.name}
-                        class="place-card-img"
+                        class="place-card-photo"
                         loading="lazy"
                         width="600"
                         height="400"
                       />
                     </div>
                     <div class="place-card-body">
-                      <h4 class="place-card-name">{place.name}</h4>
-                      <p class="place-card-tagline">{place.tagline}</p>
+                      <div class="place-card-header">
+                        <h3 class="place-card-name">{place.name}</h3>
+                        <p class="place-card-tagline">{place.tagline}</p>
+                      </div>
                       <p class="place-card-desc">{place.description}</p>
                       <div class="place-card-footer">
                         {place.hours && (
-                          <span class="place-hours">{place.hours}</span>
+                          <p class="place-card-hours">{place.hours}</p>
                         )}
                         <a
                           href={place.mapsUrl ?? "#"}
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="place-map-link"
-                          aria-label={`Ver ${place.name} en el mapa`}
+                          class="map-cta"
+                          aria-label={`Ver ubicación de ${place.name}`}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="map-link-icon" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="map-cta-icon" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd"/>
                           </svg>
                           {place.address}
                         </a>
@@ -134,22 +151,47 @@ const categories: Category[] = [
             </ul>
           </div>
         )}
-
       </div>
     ))}
   </div>
 
 </section>
 
+<script>
+  // ── Tab switching logic ────────────────────────────────────────────────────
+  const tabs   = Array.from(document.querySelectorAll<HTMLButtonElement>('.pueblo-tab'));
+  const panels = Array.from(document.querySelectorAll<HTMLElement>('.pueblo-panel'));
+
+  function activateCategory(catId: string) {
+    tabs.forEach((tab) => {
+      const isActive = tab.dataset.cat === catId;
+      tab.classList.toggle('is-active', isActive);
+      tab.setAttribute('aria-selected', String(isActive));
+    });
+
+    panels.forEach((panel) => {
+      panel.classList.toggle('is-active', panel.dataset.panel === catId);
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      activateCategory(tab.dataset.cat!);
+    });
+  });
+</script>
+
 <style>
-  /* ─── Intro block (dark) ─────────────────────────── */
+  /* ─── Sección completa ──────────────────────────── */
   .pueblo-section {
     background-color: var(--color-cream);
   }
 
+  /* ─── Intro (fondo oscuro) ──────────────────────── */
   .pueblo-intro {
-    background-color: var(--color-ink-mid);
-    padding-block: 3rem 2.5rem;
+    background-color: var(--color-ink);
+    /* Sin padding-bottom: los tabs lo cierran */
+    padding-top: 3rem;
   }
 
   .pueblo-eyebrow {
@@ -169,111 +211,170 @@ const categories: Category[] = [
     line-height: 0.95;
     letter-spacing: -0.025em;
     color: var(--color-text-light);
-    margin: 0 0 0.875rem;
+    margin: 0 0 0.75rem;
   }
 
   .pueblo-subtitle {
     font-size: 0.9375rem;
     color: var(--color-text-muted-light);
     margin: 0;
-    max-width: 34ch;
+    max-width: 36ch;
     line-height: 1.55;
   }
 
-  /* ─── Categories container ───────────────────────── */
-  .pueblo-categories {
+  /* ─── Tab strip ─────────────────────────────────── */
+  .pueblo-tabs-wrap {
+    margin-top: 1.75rem;
+    /* El strip está al borde inferior del bloque oscuro */
+    padding-bottom: 0;
+  }
+
+  .pueblo-tabs {
     display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  /* ─── Category section ───────────────────────────── */
-  .category-section {
-    padding-top: 2rem;
-    padding-bottom: 1.5rem;
-    border-top: 1px solid var(--color-border-light);
-  }
-
-  .category-section:first-child {
-    border-top: none;
-  }
-
-  .category-header {
-    display: flex;
-    align-items: center;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 1px; /* previene el clip del borde inferior */
+    /* Los tabs se alinean al borde inferior del dark block */
   }
 
-  .category-icon {
-    font-size: 1.125rem;
+  .pueblo-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pueblo-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.625rem 1.125rem;
+    min-height: 44px; /* touch target */
+    flex-shrink: 0;
+    border-radius: 8px 8px 0 0; /* esquinas redondeadas arriba, plano abajo */
+    border: 1.5px solid rgb(245 240 232 / 0.18);
+    border-bottom: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    /* Tipografía */
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgb(245 240 232 / 0.55);
+    white-space: nowrap;
+  }
+
+  .pueblo-tab:hover:not(.is-active) {
+    background: rgb(245 240 232 / 0.07);
+    border-color: rgb(245 240 232 / 0.3);
+    color: rgb(245 240 232 / 0.8);
+  }
+
+  /* Estado activo: tab "destapa" el contenido de abajo */
+  .pueblo-tab.is-active {
+    background-color: var(--color-cream);
+    border-color: var(--color-cream);
+    color: var(--color-ink);
+    font-weight: 700;
+    /* La sombra disimula la "unión" con el panel de abajo */
+    box-shadow: 0 2px 0 var(--color-cream);
+  }
+
+  .tab-emoji {
+    font-size: 1rem;
     line-height: 1;
   }
 
-  .category-title {
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-text-muted-dark);
-    margin: 0;
+  /* ─── Área de contenido (fondo claro) ───────────── */
+  .pueblo-content {
+    background-color: var(--color-cream);
+    /*
+      Borde superior coincide con la línea visual del tab strip.
+      El tab activo tiene un box-shadow que "sella" la unión.
+    */
+    border-top: 1.5px solid rgb(245 240 232 / 0.18);
   }
 
-  /* ─── Horizontal scroll track ────────────────────── */
-  .scroll-track-wrapper {
-    /* Full-bleed so cards can scroll edge-to-edge */
+  /* ─── Paneles ────────────────────────────────────── */
+  .pueblo-panel {
+    display: none;
+    padding-block: 1.75rem 3rem;
+  }
+
+  .pueblo-panel.is-active {
+    display: block;
+    animation: panel-enter 0.2s ease;
+  }
+
+  @keyframes panel-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ─── Carrusel horizontal ────────────────────────── */
+  .carousel-outer {
     overflow: hidden;
   }
 
-  .scroll-track {
+  .carousel-track {
     display: flex;
     gap: 0.875rem;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* hide on Firefox */
+    scrollbar-width: none;
     padding-inline: var(--page-px, 1.25rem);
-    padding-bottom: 0.5rem;
+    /* Trailing padding crea el "peek" de la siguiente card */
+    padding-right: calc(var(--page-px, 1.25rem) + 1.5rem);
+    padding-bottom: 4px; /* espacio para shadow de card */
     list-style: none;
     margin: 0;
-    /* Leading/trailing edge padding trick for the last card */
-    padding-right: calc(var(--page-px, 1.25rem) + 1rem);
   }
 
-  .scroll-track::-webkit-scrollbar {
+  .carousel-track::-webkit-scrollbar {
     display: none;
   }
 
-  .place-card-wrap {
-    flex: 0 0 clamp(240px, 72vw, 300px);
+  .carousel-item {
+    /* Tamaño de card en mobile: ~73vw — muestra borde de la siguiente */
+    flex: 0 0 clamp(240px, 73vw, 300px);
     scroll-snap-align: start;
   }
 
-  /* ─── Place card ─────────────────────────────────── */
+  /* ─── Card de lugar ──────────────────────────────── */
   .place-card {
     background: #fff;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid var(--color-border-light);
     overflow: hidden;
     height: 100%;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
   }
 
-  .place-card-img-wrap {
+  .place-card-photo-wrap {
     aspect-ratio: 3 / 2;
     overflow: hidden;
+    flex-shrink: 0;
   }
 
-  .place-card-img {
+  .place-card-photo {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: scale 0.4s ease;
+    transition: scale 0.45s ease;
   }
 
-  .place-card:hover .place-card-img {
+  .place-card:hover .place-card-photo {
     scale: 1.04;
   }
 
@@ -285,17 +386,21 @@ const categories: Category[] = [
     flex: 1;
   }
 
+  .place-card-header {
+    margin-bottom: 0.2rem;
+  }
+
   .place-card-name {
-    font-size: 1rem;
+    font-size: 1.0625rem;
     font-weight: 700;
     color: var(--color-text-dark);
-    margin: 0;
-    line-height: 1.25;
+    margin: 0 0 0.125rem;
+    line-height: 1.2;
   }
 
   .place-card-tagline {
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--color-fire);
     margin: 0;
     letter-spacing: 0.01em;
@@ -304,80 +409,111 @@ const categories: Category[] = [
   .place-card-desc {
     font-size: 0.8125rem;
     color: var(--color-text-muted-dark);
-    margin: 0.25rem 0 0;
+    margin: 0;
     line-height: 1.5;
     flex: 1;
   }
 
   .place-card-footer {
-    margin-top: 0.75rem;
+    margin-top: 0.625rem;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.3rem;
   }
 
-  .place-hours {
+  .place-card-hours {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--color-text-muted-dark);
+    margin: 0;
   }
 
-  /* ─── Map link ───────────────────────────────────── */
-  .place-map-link {
+  /* ─── CTA de ubicación ───────────────────────────── */
+  .map-cta {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.8125rem;
+    font-weight: 700;
     color: var(--color-fire);
     text-decoration: none;
-    transition: color 0.15s ease;
     min-height: 36px;
     padding: 0;
+    transition: color 0.15s ease;
   }
 
-  .place-map-link:hover {
+  .map-cta:hover {
     color: var(--color-fire-light);
     text-decoration: underline;
   }
 
-  .map-link-icon {
-    width: 0.75rem;
-    height: 0.75rem;
+  .map-cta-icon {
+    width: 0.8125rem;
+    height: 0.8125rem;
     flex-shrink: 0;
   }
 
-  /* ─── Landmark cards (full width, stacked) ────────── */
+  /* ─── Cards de LUGARES ───────────────────────────── */
   .landmarks-list {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 
   .landmark-card {
     background: #fff;
-    border-radius: 10px;
-    border: 1px solid var(--color-border-light);
+    border-radius: 14px;
     overflow: hidden;
+    border: 1px solid var(--color-border-light);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
   }
 
-  .landmark-img-wrap {
+  /* Foto con nombre superpuesto */
+  .landmark-photo-wrap {
+    position: relative;
     aspect-ratio: 16 / 9;
     overflow: hidden;
   }
 
-  .landmark-img {
+  .landmark-photo {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: scale 0.4s ease;
+    transition: scale 0.5s ease;
   }
 
-  .landmark-card:hover .landmark-img {
+  .landmark-card:hover .landmark-photo {
     scale: 1.03;
   }
 
+  /* Gradiente sobre la foto para el nombre */
+  .landmark-photo-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 40%,
+      rgb(15 10 5 / 0.75) 100%
+    );
+  }
+
+  /* Nombre superpuesto en la foto */
+  .landmark-name-overlay {
+    position: absolute;
+    bottom: 0.875rem;
+    left: 1rem;
+    right: 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 5.5vw, 1.625rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin: 0;
+  }
+
+  /* Cuerpo del lugar */
   .landmark-body {
     padding: 1rem 1.125rem 1.25rem;
     display: flex;
@@ -385,59 +521,66 @@ const categories: Category[] = [
     gap: 0.35rem;
   }
 
-  .landmark-header {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-  }
-
-  .landmark-name {
-    font-family: var(--font-display);
-    font-size: 1.1875rem;
-    font-weight: 800;
-    color: var(--color-text-dark);
-    margin: 0;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-  }
-
   .landmark-tagline {
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--color-fire);
-    letter-spacing: 0.01em;
+    margin: 0;
   }
 
-  .landmark-description {
-    font-size: 0.875rem;
+  .landmark-desc {
+    font-size: 0.9375rem;
     color: var(--color-text-muted-dark);
-    margin: 0.1rem 0 0.25rem;
+    margin: 0 0 0.25rem;
     line-height: 1.55;
   }
 
-  /* ─── Desktop: 2-column grid for landmarks ───────── */
-  @media (min-width: 640px) {
+  /* ─── Responsive: tablet ─────────────────────────── */
+  @media (min-width: 600px) {
+    .carousel-item {
+      flex: 0 0 clamp(260px, 44vw, 320px);
+    }
+
     .landmarks-list {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
     }
-
-    .place-card-wrap {
-      flex: 0 0 clamp(260px, 42vw, 340px);
-    }
   }
 
+  /* ─── Responsive: desktop ────────────────────────── */
   @media (min-width: 1024px) {
-    .scroll-track {
-      /* On desktop, show all cards without scroll */
+    .pueblo-tabs {
+      gap: 0.625rem;
+      overflow-x: visible;
+    }
+
+    .pueblo-tab {
+      font-size: 0.9375rem;
+      padding: 0.75rem 1.375rem;
+    }
+
+    /* En desktop el carrusel se convierte en grid */
+    .carousel-outer {
+      overflow: visible;
+    }
+
+    .carousel-track {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       overflow-x: visible;
       scroll-snap-type: none;
+      padding-right: var(--page-px, 1.25rem);
     }
 
-    .place-card-wrap {
+    .carousel-item {
       flex: none;
+    }
+
+    .landmarks-list {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.75rem;
     }
   }
 </style>

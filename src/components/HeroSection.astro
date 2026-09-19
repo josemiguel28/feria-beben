@@ -1,43 +1,63 @@
 ---
-// HeroSection.astro — Hero fotográfico de la feria
+// HeroSection.astro — Hero fotográfico con altura compacta y badge dinámico
 interface Props {
   feriaName: string;
   town: string;
+  department: string;
   year: number;
   startDate: string;
   endDate: string;
   currentDayNumber: number;
   totalDays: number;
-  isActive: boolean; // ¿La feria está activa ahora mismo?
 }
 
 const {
   feriaName,
   town,
+  department,
   year,
   startDate,
   endDate,
   currentDayNumber,
   totalDays,
-  isActive,
 } = Astro.props;
 
-// Format date range: "20–26 sep"
-const fmtShort = (iso: string) => {
-  const d = new Date(iso + "T12:00:00");
-  return d.toLocaleDateString("es-HN", { day: "numeric", month: "short" });
-};
-const dateRange = `${fmtShort(startDate)} – ${fmtShort(endDate)}`;
+// ── Estado del badge (se calcula en el servidor) ──────────────────────────────
+// "before"  → feria aún no empieza → badge "Próximamente"
+// "active"  → feria en curso       → badge "En vivo · Día X de Y"
+// "after"   → feria terminó        → sin badge (no mostrar nada)
+const todayISO  = new Date().toISOString().split("T")[0];
+const startD    = new Date(startDate + "T00:00:00");
+const endD      = new Date(endDate   + "T23:59:59");
+const todayD    = new Date(todayISO  + "T12:00:00");
 
-// Split feria name for line-break typographic treatment
-// "Feria Patronal de San Marcos" → "Feria Patronal" / "de San Marcos"
+type HeroState = "before" | "active" | "after";
+const heroState: HeroState =
+  todayD < startD ? "before"
+  : todayD > endD  ? "after"
+  :                  "active";
+
+// ── Rango de fechas: "5–11 oct 2026" ─────────────────────────────────────────
+const fmtDay   = (iso: string) =>
+  new Date(iso + "T12:00:00").toLocaleDateString("es-HN", { day: "numeric" });
+const fmtMonth = (iso: string) =>
+  new Date(iso + "T12:00:00").toLocaleDateString("es-HN", { month: "short" });
+
+const startDay   = fmtDay(startDate);
+const endDay     = fmtDay(endDate);
+const monthLabel = fmtMonth(startDate); // mismo mes
+
+const dateRange = `${startDay}–${endDay} de ${monthLabel} ${year}`;
+
+// ── Nombre tipográfico ────────────────────────────────────────────────────────
+// "Feria Patronal de Belén" → pre: "Feria Patronal" / title: "de Belén"
 const nameParts = feriaName.split(" de ");
-const nameLine1 = nameParts[0];          // "Feria Patronal"
-const nameLine2 = nameParts[1] ?? "";    // "San Marcos"
+const nameTitle = `de ${nameParts.slice(1).join(" de ")}`; // "de Belén"
 ---
 
-<section class="hero" aria-label="Bienvenida a la Feria Patronal">
-  <!-- Background image -->
+<section class="hero" aria-label={`Bienvenida a la ${feriaName}`}>
+
+  <!-- Imagen de fondo -->
   <div class="hero-bg" aria-hidden="true">
     <img
       src="/hero.jpg"
@@ -48,63 +68,74 @@ const nameLine2 = nameParts[1] ?? "";    // "San Marcos"
       width="1400"
       height="788"
     />
-    <!-- Gradiente oscuro para legibilidad del texto -->
     <div class="hero-overlay"></div>
   </div>
 
-  <!-- Content -->
+  <!-- Contenido anclado en la parte inferior -->
   <div class="hero-content container">
-    <!-- Eyebrow: estado actual -->
-    <div class="hero-eyebrow">
-      {isActive ? (
-        <span class="badge badge--fire hero-status-badge">
+
+    <!-- Badge dinámico de estado -->
+    {heroState === "active" && (
+      <div class="hero-eyebrow">
+        <span class="badge badge--fire hero-live-badge">
           <span class="badge-dot" aria-hidden="true"></span>
           En vivo · Día {currentDayNumber} de {totalDays}
         </span>
-      ) : (
-        <span class="badge badge--outline-light">
-          Próximamente
+      </div>
+    )}
+    {heroState === "before" && (
+      <div class="hero-eyebrow">
+        <span class="hero-soon-badge">
+          Próximamente · {dateRange}
         </span>
-      )}
-    </div>
+      </div>
+    )}
+    <!-- heroState === "after": sin badge, la feria terminó -->
 
     <!-- Título principal -->
     <div class="hero-title-block">
       <p class="hero-pre">Feria Patronal</p>
       <h1 class="hero-title">
-        <span class="hero-title-line1">de San Marcos</span>
+        <span class="hero-title-name">{nameTitle}</span>
         <span class="hero-title-year">{year}</span>
       </h1>
     </div>
 
-    <!-- Meta: lugar + fechas -->
+    <!-- Lugar + fechas -->
     <p class="hero-meta">
       <span>{town}</span>
+      <span class="hero-meta-sep" aria-hidden="true">·</span>
+      <span>{department}</span>
       <span class="hero-meta-sep" aria-hidden="true">·</span>
       <span>{dateRange}</span>
     </p>
 
-    <!-- CTA -->
+    <!-- CTA única -->
     <div class="hero-cta">
-      <a href="#hoy" class="btn-primary hero-btn">
+      <a href="#hoy" class="btn-primary hero-btn" aria-label="Ver el programa de actividades de hoy">
         Ver programa de hoy
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="hero-btn-icon" aria-hidden="true">
           <path fill-rule="evenodd" d="M8 2a.75.75 0 0 1 .75.75v8.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.22 3.22V2.75A.75.75 0 0 1 8 2Z" clip-rule="evenodd"/>
         </svg>
       </a>
     </div>
+
   </div>
 </section>
 
 <style>
-  /* ─── Container ──────────────────────────────────── */
+  /* ─── Shell ──────────────────────────────────────── */
   .hero {
     position: relative;
-    /* Altura: suficiente para impacto visual, no tan alta que empuje el contenido */
-    min-height: clamp(420px, 72vh, 580px);
+    /*
+      Mobile-first: 75dvh → compacto pero con impacto.
+      dvh = dynamic viewport height (respeta barra del navegador en mobile).
+      clamp() garantiza mínimo de 360px y máximo de 520px en desktop.
+    */
+    min-height: clamp(360px, 75dvh, 520px);
     display: flex;
     flex-direction: column;
-    justify-content: flex-end; /* contenido en la parte inferior */
+    justify-content: flex-end;
   }
 
   /* ─── Background ─────────────────────────────────── */
@@ -118,19 +149,23 @@ const nameLine2 = nameParts[1] ?? "";    // "San Marcos"
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 30%; /* foco en la parte superior */
+    object-position: center 25%;
+    display: block;
   }
 
   .hero-overlay {
     position: absolute;
     inset: 0;
-    /* Gradiente que oscurece más abajo donde va el texto */
+    /*
+      Gradiente: transparente arriba (la foto respira),
+      muy oscuro abajo (el texto lee perfectamente).
+    */
     background: linear-gradient(
       to bottom,
-      rgb(15 10 5 / 0.25) 0%,
-      rgb(15 10 5 / 0.45) 40%,
-      rgb(15 10 5 / 0.85) 80%,
-      rgb(15 10 5 / 0.95) 100%
+      rgb(15 10 5 / 0.10) 0%,
+      rgb(15 10 5 / 0.35) 35%,
+      rgb(15 10 5 / 0.82) 72%,
+      rgb(15 10 5 / 0.96) 100%
     );
   }
 
@@ -139,20 +174,20 @@ const nameLine2 = nameParts[1] ?? "";    // "San Marcos"
     position: relative;
     z-index: 1;
     color: var(--color-cream-warm);
-    padding-bottom: 2.5rem;
-    padding-top: 1.5rem;
+    padding-block: 1.25rem 2rem;
     display: flex;
     flex-direction: column;
-    gap: 0.875rem;
+    gap: 0.75rem;
   }
 
-  /* Eyebrow */
+  /* ─── Eyebrow / badge ────────────────────────────── */
   .hero-eyebrow {
     display: flex;
     align-items: center;
   }
 
-  .hero-status-badge {
+  /* Badge "En vivo" */
+  .hero-live-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
@@ -164,16 +199,27 @@ const nameLine2 = nameParts[1] ?? "";    // "San Marcos"
     border-radius: 50%;
     background: #fff;
     flex-shrink: 0;
-    /* Pulso sutil */
-    animation: pulse 2s ease infinite;
+    animation: pulse-dot 2s ease infinite;
   }
 
-  @keyframes pulse {
+  @keyframes pulse-dot {
     0%, 100% { opacity: 1;   scale: 1;    }
-    50%       { opacity: 0.6; scale: 0.85; }
+    50%       { opacity: 0.5; scale: 0.8; }
   }
 
-  /* Título */
+  /* Badge "Próximamente" — más discreto, sin fondo sólido */
+  .hero-soon-badge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(245 240 232 / 0.7);
+    border: 1px solid rgb(245 240 232 / 0.25);
+    padding: 0.2em 0.625em;
+    border-radius: 3px;
+  }
+
+  /* ─── Título ─────────────────────────────────────── */
   .hero-title-block {
     display: flex;
     flex-direction: column;
@@ -182,17 +228,17 @@ const nameLine2 = nameParts[1] ?? "";    // "San Marcos"
 
   .hero-pre {
     font-family: var(--font-body);
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--color-fire-light);
-    margin: 0 0 0.25rem;
+    margin: 0 0 0.2rem;
   }
 
   .hero-title {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 11vw, 4.5rem);
+    font-size: clamp(2.25rem, 10.5vw, 4.25rem);
     font-weight: 900;
     line-height: 0.92;
     letter-spacing: -0.025em;
@@ -203,7 +249,7 @@ const nameLine2 = nameParts[1] ?? "";    // "San Marcos"
     gap: 0;
   }
 
-  .hero-title-line1 {
+  .hero-title-name {
     display: block;
   }
 
@@ -213,26 +259,28 @@ const nameLine2 = nameParts[1] ?? "";    // "San Marcos"
     font-style: italic;
   }
 
-  /* Meta */
+  /* ─── Meta ───────────────────────────────────────── */
   .hero-meta {
-    font-size: 0.9375rem;
-    color: rgb(245 240 232 / 0.75);
+    font-size: 0.8125rem;
+    color: rgb(245 240 232 / 0.65);
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     flex-wrap: wrap;
+    line-height: 1.5;
   }
 
   .hero-meta-sep {
-    color: rgb(245 240 232 / 0.4);
+    color: rgb(245 240 232 / 0.3);
   }
 
-  /* CTA */
+  /* ─── CTA ────────────────────────────────────────── */
   .hero-cta {
-    margin-top: 0.25rem;
+    margin-top: 0.125rem;
   }
 
+  /* Mobile: full-width button (cómodo para touch) */
   .hero-btn {
     width: 100%;
     justify-content: center;
@@ -244,10 +292,31 @@ const nameLine2 = nameParts[1] ?? "";    // "San Marcos"
     flex-shrink: 0;
   }
 
-  /* ─── Responsive ─────────────────────────────────── */
+  /* ─── Breakpoints ────────────────────────────────── */
   @media (min-width: 480px) {
+    /* En pantallas más anchas la CTA deja de ser 100% */
     .hero-btn {
       width: auto;
+    }
+
+    .hero-content {
+      padding-bottom: 2.5rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .hero {
+      min-height: clamp(440px, 70vh, 600px);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero {
+      min-height: clamp(500px, 65vh, 680px);
+    }
+
+    .hero-title {
+      font-size: clamp(3.5rem, 5vw, 5rem);
     }
   }
 </style>

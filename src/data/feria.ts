@@ -1,34 +1,41 @@
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
-export interface Activity {
-  time: string;
-  title: string;
-  location: string;
-  category: ActivityCategory;
-  image?: string;    // ruta desde /public, ej: "/images/activity-desfile.jpg"
-  featured?: boolean; // actividad destacada del día
-}
-
 export type ActivityCategory =
   | "cultural"
   | "religioso"
   | "musical"
   | "deportivo"
   | "tradicional"
-  | "desfile";
+  | "desfile"
+  | "gastronomico";
+
+// Tipo de estado — preparado para uso futuro (cliente puede computarlo por hora)
+export type ActivityStatus = "upcoming" | "active" | "finished";
+
+export interface Activity {
+  time: string;         // "4:00 AM", "Todo el día"
+  endTime?: string;     // hora de fin, opcional — para futura detección de estado
+  title: string;
+  location: string;
+  category: ActivityCategory;
+  image?: string;       // ruta desde /public
+  featured?: boolean;   // selección editorial: actividad protagonista del día
+  // status?: ActivityStatus; // futuro: se computa client-side por hora actual
+}
 
 export interface FeriaDay {
-  date: string;
-  dayLabel: string;
-  dayName: string;
-  dayNumber: number;
+  date: string;         // "2026-10-05"
+  dayLabel: string;     // "Lunes 05"
+  dayName: string;      // "Lunes"
+  dayNumber: number;    // 5
   activities: Activity[];
 }
 
 export interface FeriaInfo {
   name: string;
-  shortName: string;   // nombre corto para navbar mobile
+  shortName: string;
   town: string;
+  department: string;
   year: number;
   startDate: string;
   endDate: string;
@@ -37,97 +44,262 @@ export interface FeriaInfo {
   days: FeriaDay[];
 }
 
-// ─── Datos de la feria ───────────────────────────────────────────────────────
+// ─── Datos reales de la Feria de Belén 2026 ─────────────────────────────────
 
 export const feria: FeriaInfo = {
-  name: "Feria Patronal de San Marcos",
-  shortName: "Feria San Marcos",
-  town: "San Marcos de la Sierra",
+  name: "Feria Patronal de Belén",
+  shortName: "Feria de Belén",
+  town: "Belén",
+  department: "Lempira, Honduras",
   year: 2026,
-  startDate: "2026-09-20",
-  endDate: "2026-09-26",
+  startDate: "2026-10-05",
+  endDate: "2026-10-11",
   totalDays: 7,
-  patronSaint: "San Marcos Evangelista",
+  patronSaint: "Nuestra Señora de Belén",
   days: [
     {
-      date: "2026-09-20",
-      dayLabel: "Domingo 20",
-      dayName: "Domingo",
-      dayNumber: 20,
-      activities: [
-        { time: "9:00 AM",  title: "Pregón de Feria",    location: "Alcaldía Municipal",  category: "cultural"   },
-        { time: "11:00 AM", title: "Misa de apertura",   location: "Iglesia San Marcos",  category: "religioso"  },
-        { time: "4:00 PM",  title: "Desfile inaugural",  location: "Calle Principal",     category: "desfile", featured: true, image: "/images/activity-desfile.jpg" },
-        { time: "7:00 PM",  title: "Noche de apertura",  location: "Plaza Municipal",     category: "musical"    },
-      ],
-    },
-    {
-      date: "2026-09-21",
-      dayLabel: "Lunes 21",
+      date: "2026-10-05",
+      dayLabel: "Lunes 05",
       dayName: "Lunes",
-      dayNumber: 21,
+      dayNumber: 5,
       activities: [
-        { time: "10:00 AM", title: "Feria de artesanías",  location: "Parque Central",    category: "cultural"   },
-        { time: "3:00 PM",  title: "Torneo de ajedrez",    location: "Casa Cultural",     category: "deportivo"  },
-        { time: "7:00 PM",  title: "Concurso de danza",    location: "Plaza Municipal",   category: "cultural", featured: true },
-        { time: "9:00 PM",  title: "Verbena popular",      location: "Plaza Municipal",   category: "musical"    },
+        {
+          time: "4:00 AM",
+          title: "Alborada",
+          location: "Plaza Municipal",
+          category: "cultural",
+        },
+        {
+          time: "2:00 PM",
+          title: "Inauguración de Feria con Desfile Carnaval",
+          location: "Calles del pueblo",
+          category: "desfile",
+          featured: true,
+          image: "/images/activity-desfile.jpg",
+        },
+        {
+          time: "6:00 PM",
+          title: "Presentación de la Banda Sinfónica de las Fuerzas Armadas",
+          location: "Plaza Municipal",
+          category: "musical",
+        },
+        {
+          time: "10:00 PM",
+          title: "Fuegos Artificiales al Cierre del Evento",
+          location: "Plaza Municipal",
+          category: "cultural",
+        },
       ],
     },
     {
-      date: "2026-09-22",
-      dayLabel: "Martes 22",
+      date: "2026-10-06",
+      dayLabel: "Martes 06",
       dayName: "Martes",
-      dayNumber: 22,
+      dayNumber: 6,
       activities: [
-        { time: "10:00 AM", title: "Misa patronal",          location: "Iglesia San Marcos",  category: "religioso"  },
-        { time: "2:00 PM",  title: "Cabalgata por el pueblo", location: "Calle Principal",    category: "tradicional" },
-        { time: "4:00 PM",  title: "Desfile de carrozas",    location: "Parque Central",      category: "desfile", featured: true, image: "/images/activity-desfile.jpg" },
-        { time: "7:00 PM",  title: "Noche cultural",         location: "Plaza Municipal",     category: "cultural"   },
-        { time: "8:30 PM",  title: "Concierto de feria",     location: "Plaza Municipal",     category: "musical"    },
+        {
+          time: "6:30 AM",
+          title: "Belén Run 2026 — Corre, Vive y Celebra",
+          location: "Calles del pueblo",
+          category: "deportivo",
+        },
+        {
+          time: "Todo el día",
+          title: "Muralismo",
+          location: "Casas del pueblo",
+          category: "cultural",
+        },
+        {
+          time: "8:00 AM",
+          title: 'Belén en Ritmo "Zumba Fest 2026"',
+          location: "Cancha Municipal",
+          category: "deportivo",
+        },
+        {
+          time: "9:00 AM",
+          title: "Viviendo Nuestras Tradiciones con Pintura y Juegos Tradicionales",
+          location: "Parque Central",
+          category: "tradicional",
+        },
+        {
+          time: "6:00 PM",
+          title: "Celebración Santa Misa",
+          location: "Iglesia de Belén",
+          category: "religioso",
+        },
+        {
+          time: "7:00 PM",
+          title: "Concurso de Coros",
+          location: "Plaza Municipal",
+          category: "musical",
+          featured: true,
+        },
       ],
     },
     {
-      date: "2026-09-23",
-      dayLabel: "Miércoles 23",
+      date: "2026-10-07",
+      dayLabel: "Miércoles 07",
       dayName: "Miércoles",
-      dayNumber: 23,
+      dayNumber: 7,
       activities: [
-        { time: "10:00 AM", title: "Juegos tradicionales", location: "Cancha Municipal",  category: "tradicional" },
-        { time: "3:00 PM",  title: "Torneo de fútbol",     location: "Campo Deportivo",   category: "deportivo"   },
-        { time: "7:00 PM",  title: "Noche de música",      location: "Plaza Municipal",   category: "musical", featured: true },
+        {
+          time: "Todo el día",
+          title: "Muralismo",
+          location: "Casas del pueblo",
+          category: "cultural",
+        },
+        {
+          time: "9:00 AM",
+          title: "Celebración Santa Misa con Banda de Camásca, Intibucá",
+          location: "Iglesia de Belén",
+          category: "religioso",
+          featured: true,
+        },
+        {
+          time: "2:00 PM",
+          title: "Tarde con Café",
+          location: "Plaza Municipal",
+          category: "cultural",
+        },
+        {
+          time: "4:00 PM",
+          title: "Competencia de Disfraces de Mascotas (Perros)",
+          location: "Parque Central",
+          category: "tradicional",
+        },
       ],
     },
     {
-      date: "2026-09-24",
-      dayLabel: "Jueves 24",
+      date: "2026-10-08",
+      dayLabel: "Jueves 08",
       dayName: "Jueves",
-      dayNumber: 24,
+      dayNumber: 8,
       activities: [
-        { time: "9:00 AM",  title: "Feria artesanal",          location: "Parque Central",  category: "cultural"    },
-        { time: "2:00 PM",  title: "Competencia de peinados",  location: "Casa Cultural",   category: "tradicional" },
-        { time: "8:00 PM",  title: "Noche de marimba",         location: "Plaza Municipal", category: "musical", featured: true },
+        {
+          time: "9:00 AM",
+          title: "Competencia Tiro al Blanco",
+          location: "Campo Deportivo",
+          category: "deportivo",
+        },
+        {
+          time: "2:00 PM",
+          title: "Carrera de Cintas en Moto",
+          location: "Carretera principal",
+          category: "tradicional",
+          featured: true,
+        },
+        {
+          time: "7:00 PM",
+          title: 'Karaoke Fest 2026 "Noche de Estrellas"',
+          location: "Plaza Municipal",
+          category: "musical",
+        },
       ],
     },
     {
-      date: "2026-09-25",
-      dayLabel: "Viernes 25",
+      date: "2026-10-09",
+      dayLabel: "Viernes 09",
       dayName: "Viernes",
-      dayNumber: 25,
+      dayNumber: 9,
       activities: [
-        { time: "10:00 AM", title: "Olimpiadas estudiantiles", location: "Campo Deportivo", category: "deportivo"  },
-        { time: "4:00 PM",  title: "Coronación de la reina",  location: "Plaza Municipal", category: "cultural", featured: true },
-        { time: "8:00 PM",  title: "Gran concierto",           location: "Plaza Municipal", category: "musical"    },
+        {
+          time: "9:00 AM",
+          title: "Desfile de Cuadrangular / Fútbol",
+          location: "Calles del pueblo",
+          category: "deportivo",
+        },
+        {
+          time: "2:00 PM",
+          title: "Inauguración de Exposición de Ganado",
+          location: "Recinto Ferial",
+          category: "tradicional",
+        },
+        {
+          time: "6:00 PM",
+          title: "Concurso de Comelón y Caguamazo",
+          location: "Plaza Municipal",
+          category: "tradicional",
+        },
+        {
+          time: "7:00 PM",
+          title: "Coronación Reina de la Feria Norma I",
+          location: "Plaza Municipal",
+          category: "cultural",
+          featured: true,
+        },
+        {
+          time: "10:00 PM",
+          title: "Fiesta Bailable con Discomóvil Impacto JR",
+          location: "Plaza Municipal",
+          category: "musical",
+        },
       ],
     },
     {
-      date: "2026-09-26",
-      dayLabel: "Sábado 26",
+      date: "2026-10-10",
+      dayLabel: "Sábado 10",
       dayName: "Sábado",
-      dayNumber: 26,
+      dayNumber: 10,
       activities: [
-        { time: "11:00 AM", title: "Desfile final",         location: "Calle Principal",     category: "desfile", featured: true, image: "/images/activity-desfile.jpg" },
-        { time: "6:00 PM",  title: "Misa de clausura",     location: "Iglesia San Marcos",  category: "religioso" },
-        { time: "8:00 PM",  title: "Gran finale y fuegos", location: "Plaza Municipal",     category: "musical"   },
+        {
+          time: "9:00 AM",
+          title: "Final de Cuadrangular / Fútbol",
+          location: "Campo Deportivo",
+          category: "deportivo",
+        },
+        {
+          time: "1:00 PM",
+          title: "Desfile Hípico",
+          location: "Calles del pueblo",
+          category: "desfile",
+          featured: true,
+          image: "/images/activity-desfile.jpg",
+        },
+        {
+          time: "3:00 PM",
+          title: "Gran Rodeo Profesional y Concierto con Poder Norteño",
+          location: "Recinto Ferial",
+          category: "musical",
+        },
+      ],
+    },
+    {
+      date: "2026-10-11",
+      dayLabel: "Domingo 11",
+      dayName: "Domingo",
+      dayNumber: 11,
+      activities: [
+        {
+          time: "9:00 AM",
+          title: "Feria Gastronómica y Competencia de la Sopa de Gallina India",
+          location: "Plaza Municipal",
+          category: "gastronomico",
+          featured: true,
+        },
+        {
+          time: "9:00 AM",
+          title: "Carrera de Cinta a Caballo",
+          location: "Calles del pueblo",
+          category: "tradicional",
+        },
+        {
+          time: "3:00 PM",
+          title: "Pelea de Gallos",
+          location: "Galera Municipal",
+          category: "tradicional",
+        },
+        {
+          time: "9:00 PM",
+          title: "Concierto con Los Traviesos de Olancho",
+          location: "Plaza Municipal",
+          category: "musical",
+        },
+        {
+          time: "11:00 PM",
+          title: "Toro Fuego — Carnaval de Cierre",
+          location: "Plaza Municipal",
+          category: "cultural",
+        },
       ],
     },
   ],
@@ -137,11 +309,11 @@ export const feria: FeriaInfo = {
 
 export interface Place {
   name: string;
-  tagline: string;       // texto corto bajo el nombre en la card
+  tagline: string;
   description: string;
   hours?: string;
   address: string;
-  image: string;         // ruta desde /public
+  image: string;
   mapsUrl?: string;
 }
 
@@ -172,7 +344,7 @@ export const cafes: Place[] = [
   {
     name: "Café San Marcos",
     tagline: "Café de altura local",
-    description: "Café cultivado en las montañas de Intibucá, pasteles artesanales y buen ambiente.",
+    description: "Café cultivado en las montañas de Lempira, pasteles artesanales y buen ambiente.",
     hours: "7:00 AM – 7:00 PM",
     address: "Parque Central, esquina norte",
     image: "/images/place-cafe-sanmarcos.jpg",
@@ -212,8 +384,8 @@ export const hotels: Place[] = [
 
 export const landmarks: Place[] = [
   {
-    name: "Iglesia San Marcos",
-    tagline: "Patrimonio colonial · Desde 1800",
+    name: "Iglesia de Belén",
+    tagline: "Patrimonio colonial · Siglo XVIII",
     description: "El corazón espiritual del pueblo. Arquitectura colonial única en la región.",
     address: "Parque Central",
     image: "/images/place-iglesia.jpg",

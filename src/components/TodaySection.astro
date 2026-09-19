@@ -1,141 +1,399 @@
 ---
 // TodaySection.astro — ¿Qué hay hoy?
-// Actividad destacada (con foto si existe) + lista compacta de las demás
+// Renderiza los 7 días; JS muestra el día correcto y gestiona la navegación.
 import type { FeriaDay, Activity } from "../data/feria";
 
 interface Props {
-  day: FeriaDay;
-  dayIndex: number;
+  days: FeriaDay[];          // todos los días de la feria
+  initialDayIndex: number;   // índice calculado en el servidor (fallback si JS falla)
   totalDays: number;
 }
 
-const { day, dayIndex, totalDays } = Astro.props;
+const { days, initialDayIndex, totalDays } = Astro.props;
 
-const fullDate     = new Date(day.date + "T12:00:00");
-const weekdayLong  = fullDate.toLocaleDateString("es-HN", { weekday: "long" });
-const weekdayCap   = weekdayLong.charAt(0).toUpperCase() + weekdayLong.slice(1);
-const monthName    = fullDate.toLocaleDateString("es-HN", { month: "long" });
-const dayOrdinal   = dayIndex + 1;
-
-// Pick the featured activity; fallback to the first one
-const featuredActivity: Activity =
-  day.activities.find((a) => a.featured) ?? day.activities[0];
-
-// Secondary activities = the rest (excluding the featured one)
-const secondaryActivities = day.activities.filter((a) => a !== featuredActivity);
-
-// Category label map (no pill — just the text for accessibility)
-const categoryLabels: Record<string, string> = {
+// ── Pre-computar info de display por día (server-side) ───────────────────────
+const CAT_LABELS: Record<string, string> = {
   cultural: "Cultural", religioso: "Religioso", musical: "Musical",
   deportivo: "Deportivo", tradicional: "Tradicional", desfile: "Desfile",
+  gastronomico: "Gastronómico",
 };
+
+interface DayDisplay {
+  weekdayLong: string;   // "Martes"
+  weekdayShort: string;  // "Mar"
+  monthName: string;     // "octubre"
+  featured: Activity;
+  secondary: Activity[];
+}
+
+const dayDisplays: DayDisplay[] = days.map((day) => {
+  const d = new Date(day.date + "T12:00:00");
+  const wdLong  = d.toLocaleDateString("es-HN", { weekday: "long" });
+  const wdShort = d.toLocaleDateString("es-HN", { weekday: "short" }).replace(".", "");
+  const month   = d.toLocaleDateString("es-HN", { month: "long" });
+  const featured = day.activities.find((a) => a.featured) ?? day.activities[0];
+  const secondary = day.activities.filter((a) => a !== featured);
+  return {
+    weekdayLong:  wdLong.charAt(0).toUpperCase() + wdLong.slice(1),
+    weekdayShort: wdShort.charAt(0).toUpperCase() + wdShort.slice(1),
+    monthName:    month,
+    featured,
+    secondary,
+  };
+});
+
+// Pasamos los datos de navegación (fechas) al cliente como JSON
+const navData = days.map((d, i) => ({
+  date:  d.date,
+  label: dayDisplays[i].weekdayShort + " " + d.dayNumber, // "Mar 6"
+}));
 ---
 
 <section id="hoy" class="today-section" aria-label="Actividades de hoy">
   <div class="container">
 
-    <!-- ── Section header ─────────────────────── -->
-    <div class="today-header">
-      <div class="today-header-left">
-        <p class="section-eyebrow">¿Qué hay hoy?</p>
-        <p class="today-day-sub">Día {dayOrdinal} de {totalDays}</p>
+    <!-- ── Navegación entre días ──────────────────── -->
+    <div class="day-nav" id="day-nav" aria-label="Navegación entre días">
+      <button
+        class="day-nav-arrow"
+        id="day-prev"
+        aria-label="Día anterior"
+        type="button"
+        disabled
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="nav-arrow-icon" aria-hidden="true">
+          <path fill-rule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd"/>
+        </svg>
+        <span class="day-nav-prev-label" id="prev-label">—</span>
+      </button>
+
+      <div class="day-nav-center" aria-live="polite" aria-atomic="true">
+        <span class="day-nav-today-tag" id="today-tag">HOY</span>
+        <span class="day-nav-current-label" id="current-label">—</span>
       </div>
-      <div class="today-date-block" aria-label={`${weekdayCap} ${day.dayNumber} de ${monthName}`}>
-        <span class="today-weekday">{weekdayCap}</span>
-        <span class="today-number">{day.dayNumber}</span>
-        <span class="today-month">{monthName}</span>
-      </div>
+
+      <button
+        class="day-nav-arrow day-nav-arrow--right"
+        id="day-next"
+        aria-label="Día siguiente"
+        type="button"
+      >
+        <span class="day-nav-next-label" id="next-label">—</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="nav-arrow-icon" aria-hidden="true">
+          <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+        </svg>
+      </button>
     </div>
 
-    <!-- ── Featured activity ─────────────────── -->
-    <div class="featured-wrap">
-      {featuredActivity.image ? (
-        <article class="featured-card featured-card--photo" aria-label={`Actividad destacada: ${featuredActivity.title}`}>
-          <div class="featured-img-wrap">
-            <img
-              src={featuredActivity.image}
-              alt={featuredActivity.title}
-              class="featured-img"
-              loading="lazy"
-              width="800"
-              height="534"
-            />
-            <!-- Category tag on the image -->
-            <span class="featured-category-tag">
-              {categoryLabels[featuredActivity.category]}
-            </span>
-          </div>
-          <div class="featured-body">
-            <p class="featured-time">{featuredActivity.time}</p>
-            <h2 class="featured-title">{featuredActivity.title}</h2>
-            <p class="featured-location">
-              <svg class="loc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
-              </svg>
-              {featuredActivity.location}
-            </p>
-          </div>
-        </article>
-      ) : (
-        <article class="featured-card featured-card--editorial" aria-label={`Actividad destacada: ${featuredActivity.title}`}>
-          <div class="featured-editorial-time">{featuredActivity.time}</div>
-          <div class="featured-editorial-body">
-            <p class="featured-editorial-category">{categoryLabels[featuredActivity.category]}</p>
-            <h2 class="featured-editorial-title">{featuredActivity.title}</h2>
-            <p class="featured-location featured-editorial-loc">
-              <svg class="loc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
-              </svg>
-              {featuredActivity.location}
-            </p>
-          </div>
-        </article>
-      )}
-    </div>
-
-    <!-- ── Secondary activities list ─────────── -->
-    {secondaryActivities.length > 0 && (
-      <div class="secondary-activities" role="list" aria-label="Otras actividades del día">
-        {secondaryActivities.map((act) => (
-          <div class="secondary-row" role="listitem">
-            <span class="secondary-time">{act.time}</span>
-            <div class="secondary-body">
-              <span class="secondary-title">{act.title}</span>
-              <span class="secondary-loc">
-                <svg class="loc-icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
-                </svg>
-                {act.location}
-              </span>
+    <!-- ── Paneles de cada día (todos renderizados, JS muestra uno) ── -->
+    {days.map((day, i) => {
+      const dd = dayDisplays[i];
+      const ordinal = i + 1;
+      return (
+        <div
+          class="day-panel"
+          id={`day-panel-${i}`}
+          data-day-index={i}
+          data-day-date={day.date}
+          hidden={i !== initialDayIndex}
+        >
+          <!-- Cabecera del día -->
+          <div class="today-header">
+            <div class="today-header-left">
+              <p class="section-eyebrow">¿Qué hay hoy?</p>
+              <p class="today-day-sub">Día {ordinal} de {totalDays}</p>
+            </div>
+            <div
+              class="today-date-block"
+              aria-label={`${dd.weekdayLong} ${day.dayNumber} de ${dd.monthName}`}
+            >
+              <span class="today-weekday">{dd.weekdayLong}</span>
+              <span class="today-number">{day.dayNumber}</span>
+              <span class="today-month">{dd.monthName}</span>
             </div>
           </div>
-        ))}
-      </div>
-    )}
+
+          <!-- Actividad destacada -->
+          <div class="featured-wrap">
+            {dd.featured.image ? (
+              <article
+                class="featured-card featured-card--photo"
+                aria-label={`Actividad destacada: ${dd.featured.title}`}
+              >
+                <div class="featured-img-wrap">
+                  <img
+                    src={dd.featured.image}
+                    alt={dd.featured.title}
+                    class="featured-img"
+                    loading={i === initialDayIndex ? "eager" : "lazy"}
+                    width="800"
+                    height="534"
+                  />
+                  <span class="featured-cat-tag">{CAT_LABELS[dd.featured.category] ?? dd.featured.category}</span>
+                </div>
+                <div class="featured-body">
+                  <p class="featured-time">{dd.featured.time}</p>
+                  <h2 class="featured-title">{dd.featured.title}</h2>
+                  <p class="featured-location">
+                    <svg class="loc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd"/>
+                    </svg>
+                    {dd.featured.location}
+                  </p>
+                </div>
+              </article>
+            ) : (
+              <article
+                class="featured-card featured-card--editorial"
+                aria-label={`Actividad destacada: ${dd.featured.title}`}
+              >
+                <div class="featured-editorial-time">{dd.featured.time}</div>
+                <div class="featured-editorial-body">
+                  <p class="featured-editorial-cat">{CAT_LABELS[dd.featured.category] ?? dd.featured.category}</p>
+                  <h2 class="featured-editorial-title">{dd.featured.title}</h2>
+                  <p class="featured-location featured-editorial-loc">
+                    <svg class="loc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd"/>
+                    </svg>
+                    {dd.featured.location}
+                  </p>
+                </div>
+              </article>
+            )}
+          </div>
+
+          <!-- Lista compacta de las demás actividades -->
+          {dd.secondary.length > 0 && (
+            <div class="secondary-activities" role="list" aria-label="Otras actividades del día">
+              {dd.secondary.map((act) => (
+                <div class="secondary-row" role="listitem">
+                  <span class="secondary-time">{act.time}</span>
+                  <div class="secondary-body">
+                    <span class="secondary-title">{act.title}</span>
+                    <span class="secondary-loc">
+                      <svg class="loc-icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M8 1.5A4.5 4.5 0 0 0 3.5 6c0 2.29 1.7 4.716 4.5 7.5C10.8 10.716 12.5 8.29 12.5 6A4.5 4.5 0 0 0 8 1.5ZM8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd"/>
+                      </svg>
+                      {act.location}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <!-- Enlace secundario al programa completo -->
+          <div class="see-all-wrap">
+            <a href="#proximo" class="see-all-link">
+              Ver programa completo
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="see-all-icon" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8 2a.75.75 0 0 1 .75.75v8.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.22 3.22V2.75A.75.75 0 0 1 8 2Z" clip-rule="evenodd"/>
+              </svg>
+            </a>
+          </div>
+
+        </div>
+      );
+    })}
 
   </div>
 </section>
 
+<!--
+  ─── Script de navegación ──────────────────────────────────────────────────
+  Responsabilidades:
+  1. Determinar el día actual (por fecha real del dispositivo)
+  2. Mostrar ese día, ocultar los demás
+  3. Actualizar labels de navegación prev/next
+  4. Manejar botones de navegación
+  5. Marcar con "HOY" sólo el día calendario actual
+
+  Arquitectura preparada para:
+  - Detectar actividades "en curso" (via endTime, en iteración futura)
+  - Detectar "todas las actividades de hoy terminaron" (via endTime)
+  - Transición automática a "mañana" cuando el día actual termina
+-->
+<script define:vars={{ navData, initialDayIndex }}>
+  // ─── Estado ────────────────────────────────────────────────────────────────
+  const DAYS = navData;  // [{ date, label }]
+  const TOTAL = DAYS.length;
+
+  // Determinar índice del día actual (fecha real del dispositivo)
+  const todayISO = new Date().toISOString().split("T")[0];
+  const todayIdx = DAYS.findIndex((d) => d.date === todayISO);
+
+  // Si no encontramos la fecha (antes o después de la feria), usamos el índice
+  // calculado en el servidor como fallback.
+  let calendarTodayIdx = todayIdx !== -1 ? todayIdx : initialDayIndex;
+
+  // Índice actualmente visible en la UI
+  let activeIdx = calendarTodayIdx;
+
+  // ─── Referencias DOM ───────────────────────────────────────────────────────
+  const btnPrev     = document.getElementById("day-prev");
+  const btnNext     = document.getElementById("day-next");
+  const prevLabel   = document.getElementById("prev-label");
+  const nextLabel   = document.getElementById("next-label");
+  const currentLbl  = document.getElementById("current-label");
+  const todayTag    = document.getElementById("today-tag");
+  const panels      = Array.from(document.querySelectorAll(".day-panel"));
+
+  // ─── showDay ───────────────────────────────────────────────────────────────
+  function showDay(idx) {
+    // Ocultar todos los paneles
+    panels.forEach((p, i) => {
+      p.hidden = i !== idx;
+    });
+
+    // Labels de navegación
+    const hasPrev = idx > 0;
+    const hasNext = idx < TOTAL - 1;
+
+    btnPrev.disabled = !hasPrev;
+    btnNext.disabled = !hasNext;
+
+    prevLabel.textContent = hasPrev ? DAYS[idx - 1].label : "";
+    nextLabel.textContent = hasNext ? DAYS[idx + 1].label : "";
+    currentLbl.textContent = DAYS[idx].label;
+
+    // Badge "HOY": solo aparece cuando estamos viendo el día calendario actual
+    const isCalendarToday = idx === calendarTodayIdx;
+    todayTag.hidden = !isCalendarToday;
+    todayTag.setAttribute("aria-hidden", String(!isCalendarToday));
+
+    activeIdx = idx;
+  }
+
+  // ─── Listeners ─────────────────────────────────────────────────────────────
+  btnPrev.addEventListener("click", () => {
+    if (activeIdx > 0) showDay(activeIdx - 1);
+  });
+
+  btnNext.addEventListener("click", () => {
+    if (activeIdx < TOTAL - 1) showDay(activeIdx + 1);
+  });
+
+  // ─── Swipe support para la navegación (mobile) ────────────────────────────
+  // Detectar swipe horizontal sobre la sección de hoy
+  const section = document.getElementById("hoy");
+  let touchStartX = 0;
+
+  section.addEventListener("touchstart", (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  section.addEventListener("touchend", (e) => {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    if (Math.abs(dx) < 50) return; // umbral mínimo 50px
+    if (dx < 0 && activeIdx < TOTAL - 1) showDay(activeIdx + 1); // swipe left → next
+    if (dx > 0 && activeIdx > 0)         showDay(activeIdx - 1); // swipe right → prev
+  }, { passive: true });
+
+  // ─── Inicializar ───────────────────────────────────────────────────────────
+  showDay(activeIdx);
+</script>
+
 <style>
   .today-section {
     background-color: var(--color-cream);
-    padding-block: 3rem;
+    padding-block: 0 3rem;
+    --color-surface: #ffffff;
   }
 
-  /* ─── Header ────────────────────────────────── */
+  /* ─── Navegación de días ─────────────────────────── */
+  .day-nav {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-bottom: 1px solid var(--color-border-light);
+    margin-bottom: 0;
+  }
+
+  .day-nav-arrow {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.875rem 0;
+    min-height: 48px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted-dark);
+    transition: color 0.15s ease;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .day-nav-arrow:not(:disabled):hover {
+    color: var(--color-fire);
+  }
+
+  .day-nav-arrow:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+
+  .day-nav-arrow--right {
+    margin-left: auto;
+  }
+
+  .nav-arrow-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
+  .day-nav-center {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0 0.25rem;
+  }
+
+  .day-nav-today-tag {
+    font-size: 0.5625rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--color-fire);
+    padding: 0.15em 0.45em;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .day-nav-current-label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-text-dark);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  /* ─── Panel de día ───────────────────────────────── */
+  .day-panel {
+    padding-top: 1.5rem;
+  }
+
+  /* ─── Cabecera del día ───────────────────────────── */
   .today-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
 
   .today-header-left {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-    padding-top: 0.2rem;
+    padding-top: 0.25rem;
   }
 
   .section-eyebrow {
@@ -164,7 +422,7 @@ const categoryLabels: Record<string, string> = {
 
   .today-weekday {
     font-family: var(--font-display);
-    font-size: clamp(1.5rem, 7vw, 2.25rem);
+    font-size: clamp(1.375rem, 6.5vw, 2rem);
     font-weight: 800;
     color: var(--color-fire);
     letter-spacing: -0.02em;
@@ -172,7 +430,7 @@ const categoryLabels: Record<string, string> = {
 
   .today-number {
     font-family: var(--font-display);
-    font-size: clamp(2.75rem, 13vw, 4.5rem);
+    font-size: clamp(2.5rem, 12vw, 4rem);
     font-weight: 900;
     line-height: 0.85;
     color: var(--color-text-dark);
@@ -187,7 +445,7 @@ const categoryLabels: Record<string, string> = {
     letter-spacing: 0.04em;
   }
 
-  /* ─── Featured card: with photo ─────────────── */
+  /* ─── Featured: con foto ─────────────────────────── */
   .featured-wrap {
     margin-bottom: 0;
   }
@@ -195,7 +453,7 @@ const categoryLabels: Record<string, string> = {
   .featured-card {
     border-radius: 10px;
     overflow: hidden;
-    background: var(--color-surface, #fff);
+    background: var(--color-surface);
   }
 
   .featured-card--photo {
@@ -220,7 +478,7 @@ const categoryLabels: Record<string, string> = {
     scale: 1.03;
   }
 
-  .featured-category-tag {
+  .featured-cat-tag {
     position: absolute;
     top: 0.75rem;
     left: 0.75rem;
@@ -230,31 +488,31 @@ const categoryLabels: Record<string, string> = {
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    padding: 0.2em 0.6em;
+    padding: 0.2em 0.625em;
     border-radius: 3px;
   }
 
   .featured-body {
-    padding: 1rem 1.125rem 1.25rem;
+    padding: 0.875rem 1rem 1.125rem;
   }
 
   .featured-time {
     font-size: 0.8125rem;
     font-weight: 700;
     color: var(--color-fire);
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.3rem;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
   }
 
   .featured-title {
     font-family: var(--font-display);
-    font-size: clamp(1.375rem, 5vw, 1.75rem);
+    font-size: clamp(1.25rem, 4.5vw, 1.625rem);
     font-weight: 800;
     line-height: 1.1;
     letter-spacing: -0.02em;
     color: var(--color-text-dark);
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.45rem;
   }
 
   .featured-location {
@@ -270,30 +528,28 @@ const categoryLabels: Record<string, string> = {
     width: 0.75rem;
     height: 0.75rem;
     flex-shrink: 0;
-    color: var(--color-text-muted-dark);
-    opacity: 0.6;
+    opacity: 0.55;
   }
 
-  /* ─── Featured card: editorial (no photo) ────── */
+  /* ─── Featured: editorial (sin foto) ────────────── */
   .featured-card--editorial {
     background: var(--color-ink-mid);
     display: flex;
     align-items: stretch;
-    min-height: 160px;
+    min-height: 148px;
   }
 
   .featured-editorial-time {
     font-family: var(--font-display);
-    font-size: clamp(1rem, 4vw, 1.25rem);
+    font-size: clamp(0.9375rem, 3.5vw, 1.125rem);
     font-weight: 800;
     font-style: italic;
     color: var(--color-fire);
     writing-mode: vertical-rl;
     text-orientation: mixed;
     transform: rotate(180deg);
-    padding: 1.25rem 1rem;
+    padding: 1rem 0.875rem;
     background: var(--color-ink);
-    letter-spacing: -0.01em;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -302,14 +558,14 @@ const categoryLabels: Record<string, string> = {
 
   .featured-editorial-body {
     flex: 1;
-    padding: 1.25rem 1.25rem;
+    padding: 1.125rem 1.125rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 0.375rem;
+    gap: 0.3rem;
   }
 
-  .featured-editorial-category {
+  .featured-editorial-cat {
     font-size: 0.625rem;
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -320,7 +576,7 @@ const categoryLabels: Record<string, string> = {
 
   .featured-editorial-title {
     font-family: var(--font-display);
-    font-size: clamp(1.375rem, 5vw, 1.75rem);
+    font-size: clamp(1.125rem, 4.5vw, 1.5rem);
     font-weight: 800;
     line-height: 1.1;
     letter-spacing: -0.02em;
@@ -329,30 +585,30 @@ const categoryLabels: Record<string, string> = {
   }
 
   .featured-editorial-loc {
-    color: var(--color-text-muted-light);
+    color: rgb(245 240 232 / 0.55);
   }
 
   .featured-editorial-loc .loc-icon {
-    color: var(--color-text-muted-light);
+    color: rgb(245 240 232 / 0.55);
   }
 
-  /* ─── Secondary activities ───────────────────── */
+  /* ─── Lista secundaria ───────────────────────────── */
   .secondary-activities {
-    margin-top: 0.5rem;
+    margin-top: 0.375rem;
     border-top: 1px solid var(--color-border-light);
   }
 
   .secondary-row {
     display: flex;
     align-items: baseline;
-    gap: 1rem;
-    padding: 0.875rem 0;
+    gap: 0.875rem;
+    padding: 0.75rem 0;
     border-bottom: 1px solid var(--color-border-light);
     min-height: 44px;
   }
 
   .secondary-time {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--color-fire);
@@ -367,7 +623,7 @@ const categoryLabels: Record<string, string> = {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.1rem;
   }
 
   .secondary-title {
@@ -390,11 +646,77 @@ const categoryLabels: Record<string, string> = {
     width: 0.6875rem;
     height: 0.6875rem;
     flex-shrink: 0;
-    opacity: 0.5;
+    opacity: 0.45;
   }
 
-  /* Globally declared custom property */
-  .today-section {
-    --color-surface: #ffffff;
+  /* ─── "Ver programa completo" ────────────────────── */
+  .see-all-wrap {
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border-light);
+    margin-top: 0;
+  }
+
+  .see-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-muted-dark);
+    text-decoration: none;
+    transition: color 0.15s ease;
+    min-height: 36px;
+    padding: 0.25rem 0;
+  }
+
+  .see-all-link:hover {
+    color: var(--color-fire);
+  }
+
+  .see-all-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  /* ─── Responsive ─────────────────────────────────── */
+  @media (min-width: 640px) {
+    .today-section {
+      padding-bottom: 3.5rem;
+    }
+
+    .featured-title {
+      font-size: 1.75rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    /* En desktop, el panel de hoy puede ir a 2 columnas:
+       featured (izq) + lista secundaria (der) */
+    .day-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 0 2rem;
+      align-items: start;
+    }
+
+    .today-header {
+      grid-column: 1 / -1;
+    }
+
+    .featured-wrap {
+      grid-column: 1;
+    }
+
+    .secondary-activities {
+      grid-column: 2;
+      margin-top: 0;
+      border-top: none;
+    }
+
+    .see-all-wrap {
+      grid-column: 1 / -1;
+    }
   }
 </style>

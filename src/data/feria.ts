@@ -81,7 +81,7 @@ export const feria: FeriaInfo = {
           location: "Plaza Municipal",
           category: "musical",
           featured: true,
-          image: "/images/activity-musica.jpg",
+          image: "/images/activity-concursocoros.png",
         },
         {
           time: "10:00 PM",
@@ -133,8 +133,7 @@ export const feria: FeriaInfo = {
           location: "Plaza Municipal",
           category: "musical",
           featured: true,
-          image: "/images/activity-musica.jpg",
-
+          image: "/images/activity-concursocoros.png",
         },
       ],
     },
@@ -331,63 +330,45 @@ export interface Place {
 
 export const restaurants: Place[] = [
   {
-    name: "El Rincón Típico",
+    name: "La Ermita",
     tagline: "Comida típica hondureña",
     description: "Baleadas, platos del día y frescos naturales en el corazón del pueblo.",
     hours: "7:00 AM – 9:00 PM",
     address: "Calle Principal, frente al Parque",
-    image: "/images/place-rincon.jpg",
+    image: "/images/laermita.jpg",
     mapsUrl: "https://maps.google.com",
   },
   {
-    name: "Comedor Doña Rosa",
+    name: "Comedor Lesly",
     tagline: "Cocina casera de siempre",
     description: "Sopas, antojitos y desayunos hechos con amor. El sabor de casa.",
     hours: "6:00 AM – 8:00 PM",
     address: "Barrio El Centro, una cuadra del mercado",
-    image: "/images/place-comedor.jpg",
+    image: "/images/lesly.jpg",
     mapsUrl: "https://maps.google.com",
   },
 ];
 
 export const cafes: Place[] = [
   {
-    name: "Café San Marcos",
+    name: "El Portal de Bélen Café",
     tagline: "Café de altura local",
-    description: "Café cultivado en las montañas de Lempira, pasteles artesanales y buen ambiente.",
+    description: "Café cultivado en las montañas de Belén, pasteles artesanales y buen ambiente.",
     hours: "7:00 AM – 7:00 PM",
-    address: "Parque Central, esquina norte",
-    image: "/images/place-cafe-sanmarcos.jpg",
-    mapsUrl: "https://maps.google.com",
-  },
-  {
-    name: "La Terraza",
-    tagline: "Vista al valle y al pueblo",
-    description: "Café, jugos y meriendas con una vista panorámica que no tiene precio.",
-    hours: "8:00 AM – 6:00 PM",
-    address: "Calle La Loma, segundo piso",
-    image: "/images/place-terraza.jpg",
+    address: "Parque Central",
+    image: "/images/elportal.jpg",
     mapsUrl: "https://maps.google.com",
   },
 ];
 
 export const hotels: Place[] = [
   {
-    name: "Hotel La Ceiba",
+    name: "Hotel Posada Bélen",
     tagline: "Cómodo y bien ubicado",
     description: "Habitaciones limpias, wifi y desayuno incluido. A dos cuadras de todo.",
     hours: "Recepción 24h",
-    address: "Av. Principal, salida norte",
+    address: "Una cuadra abajo del parque central",
     image: "/images/place-hotel.jpg",
-    mapsUrl: "https://maps.google.com",
-  },
-  {
-    name: "Posada El Parque",
-    tagline: "Ambiente familiar y tranquilo",
-    description: "Hospedaje íntimo en un patio colonial lleno de flores. La experiencia auténtica.",
-    hours: "Check-in desde 2:00 PM",
-    address: "Media cuadra del Parque Central",
-    image: "/images/place-posada.jpg",
     mapsUrl: "https://maps.google.com",
   },
 ];
@@ -399,14 +380,6 @@ export const landmarks: Place[] = [
     description: "El corazón espiritual del pueblo. Arquitectura colonial única en la región.",
     address: "Parque Central",
     image: "/images/place-iglesia.jpg",
-    mapsUrl: "https://maps.google.com",
-  },
-  {
-    name: "Mirador El Cerro",
-    tagline: "Vista panorámica del valle",
-    description: "A 15 minutos a pie. Una vista que lo cambia todo.",
-    address: "Camino al cerro, salida este",
-    image: "/images/place-mirador.jpg",
     mapsUrl: "https://maps.google.com",
   },
 ];

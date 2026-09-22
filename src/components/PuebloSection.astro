@@ -2,33 +2,35 @@
 // PuebloSection.astro — Descubre el pueblo
 // Tabs editoriales (underline naranja) · Cards sobrias · Sin colores de UI
 import {
-  restaurants, cafes, hotels, landmarks,
+  restaurants,
+  cafes,
+  hotels,
+  landmarks,
   type Place,
 } from "../data/feria";
 
 const CATEGORIES = [
-  { id: "comer",     label: "Comer",     places: restaurants, isLandmark: false },
-  { id: "cafes",     label: "Cafeterías", places: cafes,      isLandmark: false },
-  { id: "hospedaje", label: "Hospedaje",  places: hotels,     isLandmark: false },
-  { id: "lugares",   label: "Lugares",    places: landmarks,  isLandmark: true  },
+  { id: "cafes", label: "Cafeterías", places: cafes, isLandmark: false },
+  { id: "comer", label: "Comer", places: restaurants, isLandmark: false },
+  { id: "hospedaje", label: "Hospedaje", places: hotels, isLandmark: false },
+  { id: "lugares", label: "Lugares", places: landmarks, isLandmark: true },
 ] as const;
 
 // SVG icons — outline, stroke-width 1.5, sin relleno, heredan color del padre
 const ICON: Record<string, string> = {
-  comer: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v5a3 3 0 0 0 3 3v9"/><path d="M14 2v16"/><path d="M14 2a4 4 0 0 1 0 8"/></svg>`,
-  cafes: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h8v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V10Z"/><path d="M12 11h2a3 3 0 0 1 0 6h-2"/><path d="M6 5V3M9 5V2M12 5V3"/></svg>`,
-  hospedaje: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="11" width="16" height="6" rx="1"/><path d="M2 17v2M18 17v2"/><path d="M2 14h16"/><path d="M5 11V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/><rect x="7" y="8" width="3" height="3" rx="0.5"/></svg>`,
-  lugares: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2a6 6 0 0 0-6 6c0 4 6 11 6 11s6-7 6-11a6 6 0 0 0-6-6Z"/><circle cx="10" cy="8" r="2"/></svg>`,
+  comer: `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v5a3 3 0 0 0 3 3v9"/><path d="M14 2v16"/><path d="M14 2a4 4 0 0 1 0 8"/></svg>`,
+  cafes: `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h8v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V10Z"/><path d="M12 11h2a3 3 0 0 1 0 6h-2"/><path d="M6 5V3M9 5V2M12 5V3"/></svg>`,
+  hospedaje: `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="11" width="16" height="6" rx="1"/><path d="M2 17v2M18 17v2"/><path d="M2 14h16"/><path d="M5 11V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/><rect x="7" y="8" width="3" height="3" rx="0.5"/></svg>`,
+  lugares: `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2a6 6 0 0 0-6 6c0 4 6 11 6 11s6-7 6-11a6 6 0 0 0-6-6Z"/><circle cx="10" cy="8" r="2"/></svg>`,
   // Iconos utilitarios (16px viewBox)
-  pin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2A4 4 0 0 0 4 6c0 3 4 8 4 8s4-5 4-8a4 4 0 0 0-4-4Z"/><circle cx="8" cy="6" r="1.5"/></svg>`,
-  clock: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>`,
-  arrow: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M7 3l3 3-3 3"/></svg>`,
+  pin: `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2A4 4 0 0 0 4 6c0 3 4 8 4 8s4-5 4-8a4 4 0 0 0-4-4Z"/><circle cx="8" cy="6" r="1.5"/></svg>`,
+  clock: `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>`,
+  arrow: `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M7 3l3 3-3 3"/></svg>`,
 };
 ---
 
 <section id="pueblo" class="pueblo-section" aria-label="Descubre el pueblo">
   <div class="container">
-
     <!-- ── Encabezado ─────────────────────────────── -->
     <header class="pueblo-header">
       <p class="pueblo-eyebrow">¿Dónde puedo ir?</p>
@@ -39,145 +41,162 @@ const ICON: Record<string, string> = {
     </header>
 
     <!-- ── Tabs — estilo editorial con línea naranja ─ -->
-    <div
-      class="pueblo-tabs"
-      role="tablist"
-      aria-label="Filtrar por categoría"
-    >
-      {CATEGORIES.map((cat, i) => (
-        <button
-          class:list={["pueblo-tab", { "is-active": i === 0 }]}
-          role="tab"
-          type="button"
-          id={`tab-${cat.id}`}
-          data-cat={cat.id}
-          aria-selected={i === 0 ? "true" : "false"}
-          aria-controls={`panel-${cat.id}`}
-        >
-          <span class="tab-icon" set:html={ICON[cat.id]} aria-hidden="true" />
-          <span class="tab-label">{cat.label}</span>
-        </button>
-      ))}
+    <div class="pueblo-tabs" role="tablist" aria-label="Filtrar por categoría">
+      {
+        CATEGORIES.map((cat, i) => (
+          <button
+            class:list={["pueblo-tab", { "is-active": i === 0 }]}
+            role="tab"
+            type="button"
+            id={`tab-${cat.id}`}
+            data-cat={cat.id}
+            aria-selected={i === 0 ? "true" : "false"}
+            aria-controls={`panel-${cat.id}`}
+          >
+            <span class="tab-icon" set:html={ICON[cat.id]} aria-hidden="true" />
+            <span class="tab-label">{cat.label}</span>
+          </button>
+        ))
+      }
     </div>
 
     <!-- ── Paneles de contenido ───────────────────── -->
-    {CATEGORIES.map((cat, i) => (
-      <div
-        class:list={["pueblo-panel", { "is-active": i === 0 }]}
-        id={`panel-${cat.id}`}
-        data-panel={cat.id}
-        role="tabpanel"
-        aria-labelledby={`tab-${cat.id}`}
-      >
-        {cat.isLandmark ? (
-
-          /* ── Lugares: cards apiladas verticalmente, foto protagonista ── */
-          <div class="landmarks-list">
-            {cat.places.map((place) => (
-              <article class="landmark-card">
-                <div class="landmark-photo-wrap">
-                  <img
-                    src={place.image}
-                    alt={place.name}
-                    class="landmark-photo"
-                    loading="lazy"
-                    width="800"
-                    height="534"
-                  />
-                </div>
-                <div class="landmark-body">
-                  <h3 class="landmark-name">{place.name}</h3>
-                  <p class="landmark-tagline">{place.tagline}</p>
-                  <p class="landmark-desc">{place.description}</p>
-                  <a
-                    href={place.mapsUrl ?? "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="place-dir-cta"
-                    aria-label={`Cómo llegar a ${place.name}`}
-                  >
-                    Cómo llegar
-                    <span class="cta-arrow" set:html={ICON.arrow} aria-hidden="true" />
-                  </a>
-                </div>
-              </article>
-            ))}
-          </div>
-
-        ) : (
-
-          /* ── Carrusel horizontal ─────────────────────────────────────── */
-          <div class="carousel-outer">
-            <ul class="carousel-track" role="list" aria-label={cat.label}>
+    {
+      CATEGORIES.map((cat, i) => (
+        <div
+          class:list={["pueblo-panel", { "is-active": i === 0 }]}
+          id={`panel-${cat.id}`}
+          data-panel={cat.id}
+          role="tabpanel"
+          aria-labelledby={`tab-${cat.id}`}
+        >
+          {cat.isLandmark ? (
+            /* ── Lugares: cards apiladas verticalmente, foto protagonista ── */
+            <div class="landmarks-list">
               {cat.places.map((place) => (
-                <li class="carousel-item" role="listitem">
-                  <article class="place-card">
-                    <div class="place-photo-wrap">
-                      <img
-                        src={place.image}
-                        alt={place.name}
-                        class="place-photo"
-                        loading="lazy"
-                        width="600"
-                        height="400"
+                <article class="landmark-card">
+                  <div class="landmark-photo-wrap">
+                    <img
+                      src={place.image}
+                      alt={place.name}
+                      class="landmark-photo"
+                      loading="lazy"
+                      width="800"
+                      height="534"
+                    />
+                  </div>
+                  <div class="landmark-body">
+                    <h3 class="landmark-name">{place.name}</h3>
+                    <p class="landmark-tagline">{place.tagline}</p>
+                    <p class="landmark-desc">{place.description}</p>
+                    <a
+                      href={place.mapsUrl ?? "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="place-dir-cta"
+                      aria-label={`Cómo llegar a ${place.name}`}
+                    >
+                      Cómo llegar
+                      <span
+                        class="cta-arrow"
+                        set:html={ICON.arrow}
+                        aria-hidden="true"
                       />
-                    </div>
-                    <div class="place-body">
-                      <h3 class="place-name">{place.name}</h3>
-                      <p class="place-tagline">{place.tagline}</p>
-                      <p class="place-desc">{place.description}</p>
-                      <div class="place-meta">
-                        {place.hours && (
-                          <div class="place-meta-row">
-                            <span class="meta-icon" set:html={ICON.clock} aria-hidden="true" />
-                            <span class="place-hours">{place.hours}</span>
-                          </div>
-                        )}
-                        <div class="place-meta-row">
-                          <span class="meta-icon" set:html={ICON.pin} aria-hidden="true" />
-                          <span class="place-address">{place.address}</span>
-                        </div>
-                      </div>
-                      <a
-                        href={place.mapsUrl ?? "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="place-dir-cta"
-                        aria-label={`Ver ubicación de ${place.name}`}
-                      >
-                        Ver ubicación
-                        <span class="cta-arrow" set:html={ICON.arrow} aria-hidden="true" />
-                      </a>
-                    </div>
-                  </article>
-                </li>
+                    </a>
+                  </div>
+                </article>
               ))}
-            </ul>
-          </div>
-
-        )}
-      </div>
-    ))}
-
+            </div>
+          ) : (
+            /* ── Carrusel horizontal ─────────────────────────────────────── */
+            <div class="carousel-outer">
+              <ul class="carousel-track" role="list" aria-label={cat.label}>
+                {cat.places.map((place) => (
+                  <li class="carousel-item" role="listitem">
+                    <article class="place-card">
+                      <div class="place-photo-wrap">
+                        <img
+                          src={place.image}
+                          alt={place.name}
+                          class="place-photo"
+                          loading="lazy"
+                          width="600"
+                          height="400"
+                        />
+                      </div>
+                      <div class="place-body">
+                        <h3 class="place-name">{place.name}</h3>
+                        <p class="place-tagline">{place.tagline}</p>
+                        <p class="place-desc">{place.description}</p>
+                        <div class="place-meta">
+                          {place.hours && (
+                            <div class="place-meta-row">
+                              <span
+                                class="meta-icon"
+                                set:html={ICON.clock}
+                                aria-hidden="true"
+                              />
+                              <span class="place-hours">{place.hours}</span>
+                            </div>
+                          )}
+                          <div class="place-meta-row">
+                            <span
+                              class="meta-icon"
+                              set:html={ICON.pin}
+                              aria-hidden="true"
+                            />
+                            <span class="place-address">{place.address}</span>
+                          </div>
+                        </div>
+                        <a
+                          href={place.mapsUrl ?? "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="place-dir-cta"
+                          aria-label={`Ver ubicación de ${place.name}`}
+                        >
+                          Ver ubicación
+                          <span
+                            class="cta-arrow"
+                            set:html={ICON.arrow}
+                            aria-hidden="true"
+                          />
+                        </a>
+                      </div>
+                    </article>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      ))
+    }
   </div>
 </section>
 
 <script>
-  const tabs   = Array.from(document.querySelectorAll<HTMLButtonElement>('.pueblo-tab'));
-  const panels = Array.from(document.querySelectorAll<HTMLElement>('.pueblo-panel'));
+  const tabs = Array.from(
+    document.querySelectorAll<HTMLButtonElement>(".pueblo-tab"),
+  );
+  const panels = Array.from(
+    document.querySelectorAll<HTMLElement>(".pueblo-panel"),
+  );
 
   function activate(catId: string) {
-    tabs.forEach(t => {
+    tabs.forEach((t) => {
       const on = t.dataset.cat === catId;
-      t.classList.toggle('is-active', on);
-      t.setAttribute('aria-selected', String(on));
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-selected", String(on));
     });
-    panels.forEach(p => {
-      p.classList.toggle('is-active', p.dataset.panel === catId);
+    panels.forEach((p) => {
+      p.classList.toggle("is-active", p.dataset.panel === catId);
     });
   }
 
-  tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.cat!)));
+  tabs.forEach((t) =>
+    t.addEventListener("click", () => activate(t.dataset.cat!)),
+  );
 </script>
 
 <style>
@@ -189,7 +208,9 @@ const ICON: Record<string, string> = {
   }
 
   /* ─── Encabezado ─────────────────────────────────── */
-  .pueblo-header { margin-bottom: 2rem; }
+  .pueblo-header {
+    margin-bottom: 2rem;
+  }
 
   .pueblo-eyebrow {
     font-family: var(--font-body);
@@ -225,44 +246,49 @@ const ICON: Record<string, string> = {
     display: flex;
     gap: 0;
     overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-y: none;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     border-bottom: 1px solid var(--color-border);
     margin-bottom: 1.75rem;
   }
 
-  .pueblo-tabs::-webkit-scrollbar { display: none; }
+  .pueblo-tabs::-webkit-scrollbar {
+    display: none;
+  }
 
   .pueblo-tab {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.625rem 0.875rem;
+    padding: 0.625rem 0.75rem;
     min-height: 44px;
     flex-shrink: 0;
     background: none;
     border: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
     cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition:
+      color 0.15s ease,
+      box-shadow 0.15s ease;
 
     font-family: var(--font-body);
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-muted);
     white-space: nowrap;
+    position: relative;
   }
 
   .pueblo-tab:hover:not(.is-active) {
     color: var(--color-ink);
   }
 
-  /* Activo: texto oscuro + pequeña línea naranja inferior */
+  /* Activo: texto oscuro + línea naranja inferior perfecta */
   .pueblo-tab.is-active {
     color: var(--color-ink);
     font-weight: 700;
-    border-bottom-color: var(--color-accent);
+    box-shadow: inset 0 -2px 0 var(--color-accent);
   }
 
   .tab-icon {
@@ -275,13 +301,23 @@ const ICON: Record<string, string> = {
     transition: opacity 0.15s ease;
   }
 
-  .tab-icon svg { width: 100%; height: 100%; }
+  .tab-icon :global(svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
 
-  .pueblo-tab.is-active .tab-icon  { opacity: 1; }
-  .pueblo-tab:hover:not(.is-active) .tab-icon { opacity: 0.85; }
+  .pueblo-tab.is-active .tab-icon {
+    opacity: 1;
+  }
+  .pueblo-tab:hover:not(.is-active) .tab-icon {
+    opacity: 0.85;
+  }
 
   /* ─── Paneles ─────────────────────────────────────── */
-  .pueblo-panel { display: none; }
+  .pueblo-panel {
+    display: none;
+  }
 
   .pueblo-panel.is-active {
     display: block;
@@ -289,12 +325,20 @@ const ICON: Record<string, string> = {
   }
 
   @keyframes panel-in {
-    from { opacity: 0; transform: translateY(5px); }
-    to   { opacity: 1; transform: translateY(0);   }
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* ─── Carrusel ────────────────────────────────────── */
-  .carousel-outer { overflow: hidden; }
+  .carousel-outer {
+    overflow: hidden;
+  }
 
   .carousel-track {
     display: flex;
@@ -312,7 +356,9 @@ const ICON: Record<string, string> = {
     margin-bottom: 0;
   }
 
-  .carousel-track::-webkit-scrollbar { display: none; }
+  .carousel-track::-webkit-scrollbar {
+    display: none;
+  }
 
   .carousel-item {
     flex: 0 0 clamp(232px, 71vw, 292px);
@@ -328,6 +374,7 @@ const ICON: Record<string, string> = {
     height: 100%;
     display: flex;
     flex-direction: column;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
   }
 
   .place-photo-wrap {
@@ -344,7 +391,16 @@ const ICON: Record<string, string> = {
     transition: transform 0.3s ease;
   }
 
-  .place-card:hover .place-photo { transform: scale(1.03); }
+  @media (hover: hover) and (pointer: fine) {
+    .place-card:hover {
+      transform: scale(1.01);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      border-color: #D1D5DB;
+    }
+    .place-card:hover .place-photo {
+      transform: scale(1.02);
+    }
+  }
 
   .place-body {
     padding: 0.875rem 1rem 1.125rem;
@@ -405,10 +461,17 @@ const ICON: Record<string, string> = {
     opacity: 0.7;
   }
 
-  .meta-icon svg { width: 100%; height: 100%; }
+  .meta-icon :global(svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
 
   /* El reloj (horario) en naranja */
-  .place-meta-row:first-child .meta-icon { color: var(--color-accent); opacity: 1; }
+  .place-meta-row:first-child .meta-icon {
+    color: var(--color-accent);
+    opacity: 1;
+  }
 
   .place-hours {
     font-family: var(--font-body);
@@ -439,7 +502,9 @@ const ICON: Record<string, string> = {
     min-height: 36px;
   }
 
-  .place-dir-cta:hover { color: var(--color-accent); }
+  .place-dir-cta:hover {
+    color: var(--color-accent);
+  }
 
   .cta-arrow {
     display: flex;
@@ -451,9 +516,15 @@ const ICON: Record<string, string> = {
     transition: transform 0.15s ease;
   }
 
-  .cta-arrow svg { width: 100%; height: 100%; }
+  .cta-arrow :global(svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
 
-  .place-dir-cta:hover .cta-arrow { transform: translateX(2px); }
+  .place-dir-cta:hover .cta-arrow {
+    transform: translateX(2px);
+  }
 
   /* ─── Landmark cards ──────────────────────────────── */
   .landmarks-list {
@@ -467,6 +538,7 @@ const ICON: Record<string, string> = {
     border-radius: 8px;
     border: 1px solid var(--color-border);
     overflow: hidden;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
   }
 
   .landmark-photo-wrap {
@@ -482,7 +554,16 @@ const ICON: Record<string, string> = {
     transition: transform 0.3s ease;
   }
 
-  .landmark-card:hover .landmark-photo { transform: scale(1.03); }
+  @media (hover: hover) and (pointer: fine) {
+    .landmark-card:hover {
+      transform: scale(1.01);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      border-color: #D1D5DB;
+    }
+    .landmark-card:hover .landmark-photo {
+      transform: scale(1.02);
+    }
+  }
 
   .landmark-body {
     padding: 1rem 1.125rem 1.25rem;
@@ -517,7 +598,9 @@ const ICON: Record<string, string> = {
 
   /* ─── Responsive ──────────────────────────────────── */
   @media (min-width: 580px) {
-    .carousel-item { flex: 0 0 clamp(252px, 43vw, 308px); }
+    .carousel-item {
+      flex: 0 0 clamp(252px, 43vw, 308px);
+    }
     .landmarks-list {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -525,7 +608,9 @@ const ICON: Record<string, string> = {
   }
 
   @media (min-width: 1024px) {
-    .carousel-outer { overflow: visible; }
+    .carousel-outer {
+      overflow: visible;
+    }
     .carousel-track {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -534,7 +619,28 @@ const ICON: Record<string, string> = {
       margin-inline: 0;
       padding-right: 0;
     }
-    .carousel-item { flex: none; }
-    .pueblo-tabs   { flex-wrap: wrap; overflow-x: visible; }
+    .carousel-item {
+      flex: none;
+    }
+    .pueblo-tabs {
+      flex-wrap: wrap;
+      overflow-x: visible;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pueblo-panel.is-active {
+      animation: none !important;
+      transform: none !important;
+      opacity: 1 !important;
+    }
+    .place-card,
+    .landmark-card,
+    .place-photo,
+    .landmark-photo,
+    .pueblo-tab {
+      transition: none !important;
+      transform: none !important;
+    }
   }
 </style>

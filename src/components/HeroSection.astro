@@ -255,6 +255,28 @@ const heroMetaText = heroState === "active" ? activeMeta : defaultMeta;
     line-height: 1.4;
   }
 
+  /* ─── Hero Entrance Animation ─────────────────────── */
+  .hero-badge-wrap,
+  .hero-title-block,
+  .hero-meta,
+  .hero-cta {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: hero-fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .hero-badge-wrap  { animation-delay: 0.05s; }
+  .hero-title-block { animation-delay: 0.12s; }
+  .hero-meta        { animation-delay: 0.18s; }
+  .hero-cta         { animation-delay: 0.24s; }
+
+  @keyframes hero-fade-up {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   /* ─── 4. CTA principal ───────────────────────────── */
   .hero-cta {
     margin-top: 0.25rem;
@@ -266,6 +288,22 @@ const heroMetaText = heroState === "active" ? activeMeta : defaultMeta;
     font-family: var(--font-body);
     font-weight: 600;
     letter-spacing: -0.01em;
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    will-change: transform;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hero-btn:hover {
+      transform: scale(1.01);
+    }
+    .hero-btn:hover .hero-btn-icon {
+      transform: translateY(2px);
+    }
+  }
+
+  .hero-btn:active {
+    transform: scale(0.985);
+    transition-duration: 0.08s;
   }
 
   .hero-btn-icon {
@@ -273,10 +311,6 @@ const heroMetaText = heroState === "active" ? activeMeta : defaultMeta;
     height: 1rem;
     flex-shrink: 0;
     transition: transform 0.15s ease;
-  }
-
-  .hero-btn:hover .hero-btn-icon {
-    transform: translateY(2px);
   }
 
   /* ─── Breakpoints ────────────────────────────────── */
@@ -305,6 +339,21 @@ const heroMetaText = heroState === "active" ? activeMeta : defaultMeta;
     .hero-title {
       font-size: clamp(3.25rem, 5.5vw, 4.75rem);
       max-width: 16ch;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-badge-wrap,
+    .hero-title-block,
+    .hero-meta,
+    .hero-cta {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+    .hero-btn {
+      transition: none;
+      transform: none !important;
     }
   }
 </style>

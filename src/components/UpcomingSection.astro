@@ -148,7 +148,7 @@ const tomorrowFull = (day: FeriaDay) => {
     color: var(--color-ink);
     cursor: pointer;
     text-decoration: none;
-    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
     letter-spacing: -0.005em;
   }
 
@@ -156,6 +156,10 @@ const tomorrowFull = (day: FeriaDay) => {
     border-color: #D1D5DB;
     background-color: #F9FAFB;
     color: var(--color-accent);
+  }
+
+  .btn-see-all-schedule:active {
+    transform: scale(0.985);
   }
 
   .cta-arrow {
@@ -174,6 +178,14 @@ const tomorrowFull = (day: FeriaDay) => {
     .btn-see-all-schedule {
       width: auto;
       padding-inline: 1.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-see-all-schedule,
+    .cta-arrow {
+      transition: none !important;
+      transform: none !important;
     }
   }
 </style>

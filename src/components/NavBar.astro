@@ -55,39 +55,57 @@ const { shortName } = Astro.props;
 <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
 
 <script>
-  const toggle = document.getElementById("nav-toggle")!;
-  const menu = document.getElementById("mobile-menu")!;
-  const backdrop = document.getElementById("nav-backdrop")!;
-  const links = menu.querySelectorAll(".mobile-link");
+  const setupNav = () => {
+    const toggle = document.getElementById("nav-toggle");
+    const menu = document.getElementById("mobile-menu");
+    const backdrop = document.getElementById("nav-backdrop");
+    const navbar = document.querySelector(".navbar");
+    if (!toggle || !menu || !backdrop || !navbar) return;
 
-  const open = () => {
-    menu.classList.add("is-open");
-    backdrop.classList.add("is-visible");
-    toggle.setAttribute("aria-expanded", "true");
-    menu.setAttribute("aria-hidden", "false");
-    toggle.setAttribute("aria-label", "Cerrar menú");
-    toggle.classList.add("is-open");
-    document.body.style.overflow = "hidden";
+    const links = menu.querySelectorAll(".mobile-link");
+
+    const open = () => {
+      menu.classList.add("is-open");
+      backdrop.classList.add("is-visible");
+      toggle.setAttribute("aria-expanded", "true");
+      menu.setAttribute("aria-hidden", "false");
+      toggle.setAttribute("aria-label", "Cerrar menú");
+      toggle.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+    };
+
+    const close = () => {
+      menu.classList.remove("is-open");
+      backdrop.classList.remove("is-visible");
+      toggle.setAttribute("aria-expanded", "false");
+      menu.setAttribute("aria-hidden", "true");
+      toggle.setAttribute("aria-label", "Abrir menú");
+      toggle.classList.remove("is-open");
+      document.body.style.overflow = "";
+    };
+
+    toggle.addEventListener("click", () =>
+      menu.classList.contains("is-open") ? close() : open(),
+    );
+    backdrop.addEventListener("click", close);
+    links.forEach((l) => l.addEventListener("click", close));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") close();
+    });
+
+    const onScroll = () => {
+      if (window.scrollY > 12) {
+        navbar.classList.add("is-scrolled");
+      } else {
+        navbar.classList.remove("is-scrolled");
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
   };
 
-  const close = () => {
-    menu.classList.remove("is-open");
-    backdrop.classList.remove("is-visible");
-    toggle.setAttribute("aria-expanded", "false");
-    menu.setAttribute("aria-hidden", "true");
-    toggle.setAttribute("aria-label", "Abrir menú");
-    toggle.classList.remove("is-open");
-    document.body.style.overflow = "";
-  };
-
-  toggle.addEventListener("click", () =>
-    menu.classList.contains("is-open") ? close() : open(),
-  );
-  backdrop.addEventListener("click", close);
-  links.forEach((l) => l.addEventListener("click", close));
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") close();
-  });
+  setupNav();
+  document.addEventListener("astro:page-load", setupNav);
 </script>
 
 <style>
@@ -98,6 +116,11 @@ const { shortName } = Astro.props;
     z-index: 100;
     background-color: var(--color-bg);
     border-bottom: 1px solid var(--color-border);
+    transition: box-shadow 0.2s ease;
+  }
+
+  .navbar.is-scrolled {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   }
 
   .navbar-inner {
@@ -120,9 +143,7 @@ const { shortName } = Astro.props;
   .logo-img {
     height: 40px;
     width: auto;
-    max-width: 120px;
     object-fit: contain;
-    display: block;
     border-radius: 4px;
   }
 
@@ -200,8 +221,8 @@ const { shortName } = Astro.props;
     border-radius: 2px;
     transform-origin: center;
     transition:
-      transform 0.25s ease,
-      opacity 0.2s ease;
+      transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.16s ease;
   }
 
   .hamburger.is-open .ham-line:nth-child(1) {
@@ -221,7 +242,10 @@ const { shortName } = Astro.props;
     border-top: 1px solid var(--color-border);
     overflow: hidden;
     max-height: 0;
-    transition: max-height 0.28s ease;
+    opacity: 0;
+    transition:
+      max-height 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.18s ease;
   }
 
   @media (min-width: 640px) {
@@ -238,6 +262,12 @@ const { shortName } = Astro.props;
     display: flex;
     flex-direction: column;
     padding-block: 0.5rem 1rem;
+    transform: translateY(-6px);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-menu.is-open .container {
+    transform: translateY(0);
   }
 
   .mobile-link {
@@ -280,6 +310,17 @@ const { shortName } = Astro.props;
   @media (min-width: 640px) {
     .nav-backdrop {
       display: none !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .navbar,
+    .ham-line,
+    .mobile-menu,
+    .mobile-menu .container,
+    .nav-backdrop {
+      transition: none !important;
+      transform: none !important;
     }
   }
 </style>

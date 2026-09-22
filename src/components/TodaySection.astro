@@ -234,7 +234,14 @@ const navData = days.map((d, i) => ({
 
   function showDay(idx) {
     panels.forEach((p, i) => {
-      p.hidden = i !== idx;
+      if (i === idx) {
+        p.hidden = false;
+        p.style.animation = "none";
+        void p.offsetHeight;
+        p.style.animation = "";
+      } else {
+        p.hidden = true;
+      }
     });
 
     const hasPrev = idx > 0;
@@ -326,13 +333,17 @@ const navData = days.map((d, i) => ({
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-muted);
-    transition: color 0.15s ease;
+    transition: color 0.15s ease, transform 0.12s ease;
     flex-shrink: 0;
     white-space: nowrap;
   }
 
   .day-nav-arrow:not(:disabled):hover {
     color: var(--color-accent);
+  }
+
+  .day-nav-arrow:not(:disabled):active {
+    transform: scale(0.96);
   }
 
   .day-nav-arrow:disabled {
@@ -392,7 +403,7 @@ const navData = days.map((d, i) => ({
     border-radius: 4px;
     cursor: pointer;
     flex-shrink: 0;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
     white-space: nowrap;
   }
 
@@ -401,9 +412,28 @@ const navData = days.map((d, i) => ({
     color: #FFFFFF;
   }
 
+  .day-nav-return-btn:active {
+    transform: scale(0.96);
+  }
+
   /* ─── Panel de día ───────────────────────────────── */
   .day-panel {
     padding-top: 1.5rem;
+  }
+
+  .day-panel:not([hidden]) {
+    animation: day-fade-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes day-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* ─── Cabecera del día ───────────────────────────── */
@@ -753,6 +783,18 @@ const navData = days.map((d, i) => ({
 
     .see-all-wrap {
       grid-column: 1 / -1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .day-panel:not([hidden]) {
+      animation: none !important;
+      transform: none !important;
+      opacity: 1 !important;
+    }
+    .day-nav-arrow,
+    .day-nav-return-btn {
+      transform: none !important;
     }
   }
 </style>

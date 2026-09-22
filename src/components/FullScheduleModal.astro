@@ -31,6 +31,7 @@ const formatDayFull = (day: FeriaDay) => {
   id="schedule-modal-backdrop"
   class="schedule-backdrop"
   aria-hidden="true"
+  data-initial-today-index={initialDayIndex}
 >
   <div
     id="schedule-modal"
@@ -121,83 +122,130 @@ const formatDayFull = (day: FeriaDay) => {
   </div>
 </div>
 
-<script define:vars={{ initialDayIndex, daysCount: days.length }}>
-  // ─── Lógica del Modal / Bottom Sheet ───────────────────────────────────────
-  const backdrop  = document.getElementById("schedule-modal-backdrop");
-  const modal     = document.getElementById("schedule-modal");
-  const closeBtn  = document.getElementById("schedule-modal-close");
-  const sheetBody = document.getElementById("sheet-body");
-  const dayItems  = Array.from(document.querySelectorAll(".schedule-day"));
+<script>
+  import { animate } from "motion";
 
-  // Detectar el día actual real del dispositivo
-  const todayISO = new Date().toISOString().split("T")[0];
-  let actualTodayIdx = -1;
-  dayItems.forEach((el, idx) => {
-    if (el.dataset.dayDate === todayISO) {
-      actualTodayIdx = idx;
-    }
-  });
+  function initModal() {
+    const backdrop = document.getElementById("schedule-modal-backdrop");
+    const modal = document.getElementById("schedule-modal");
+    const closeBtn = document.getElementById("schedule-modal-close");
+    const dayItems = Array.from(
+      document.querySelectorAll<HTMLDetailsElement>(".schedule-day"),
+    );
 
-  // Si no coincide con las fechas de la feria, usar el fallback del servidor
-  const activeTodayIdx = actualTodayIdx !== -1 ? actualTodayIdx : initialDayIndex;
+    if (!backdrop || !modal) return;
 
-  // Actualizar indicadores visuales de "HOY" y abrirlo por defecto
-  function syncTodayAccordion() {
+    const initialIdx = parseInt(
+      backdrop.dataset.initialTodayIndex || "0",
+      10,
+    );
+    const todayISO = new Date().toISOString().split("T")[0];
+    let actualTodayIdx = -1;
+    dayItems.forEach((el, idx) => {
+      if (el.dataset.dayDate === todayISO) actualTodayIdx = idx;
+    });
+
+    const activeTodayIdx =
+      actualTodayIdx !== -1 ? actualTodayIdx : initialIdx;
+
     dayItems.forEach((el, idx) => {
       const isToday = idx === activeTodayIdx;
       const tag = el.querySelector("[data-today-indicator]");
-      if (tag) {
-        tag.style.display = isToday ? "inline-flex" : "none";
-      }
+      if (tag)
+        (tag as HTMLElement).style.display = isToday ? "inline-flex" : "none";
       el.classList.toggle("is-today", isToday);
-      // Abrir HOY por defecto, los demás colapsados
       el.open = isToday;
     });
-  }
 
-  syncTodayAccordion();
+    // Smooth accordion animation using Motion
+    dayItems.forEach((details) => {
+      const summary = details.querySelector(".schedule-day-summary");
+      const content = details.querySelector(
+        ".schedule-day-content",
+      ) as HTMLElement | null;
+      if (!summary || !content) return;
 
-  // Abrir Modal
-  function openModal() {
-    backdrop.classList.add("is-visible");
-    modal.classList.add("is-visible");
-    backdrop.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
+      let isAnimating = false;
 
-    // Auto-scroll al día actual para conveniencia del usuario
-    const todayEl = document.getElementById(`schedule-day-${activeTodayIdx}`);
-    if (todayEl) {
-      setTimeout(() => {
-        todayEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }, 100);
+      summary.addEventListener("click", (e) => {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          return;
+        }
+
+        e.preventDefault();
+        if (isAnimating) return;
+
+        if (details.open) {
+          // CERRAR suavemente
+          isAnimating = true;
+          const currentH = content.offsetHeight;
+          content.style.overflow = "hidden";
+
+          animate(
+            content,
+            { height: [`${currentH}px`, "0px"], opacity: [1, 0] },
+            { duration: 0.22, easing: [0.16, 1, 0.3, 1] },
+          ).finished.then(() => {
+            details.open = false;
+            content.style.height = "";
+            content.style.opacity = "";
+            content.style.overflow = "";
+            isAnimating = false;
+          });
+        } else {
+          // ABRIR suavemente
+          details.open = true;
+          isAnimating = true;
+          content.style.overflow = "hidden";
+          const targetH = content.scrollHeight;
+
+          animate(
+            content,
+            { height: ["0px", `${targetH}px`], opacity: [0, 1] },
+            { duration: 0.24, easing: [0.16, 1, 0.3, 1] },
+          ).finished.then(() => {
+            content.style.height = "";
+            content.style.opacity = "";
+            content.style.overflow = "";
+            isAnimating = false;
+          });
+        }
+      });
+    });
+
+    function openModal() {
+      backdrop?.classList.add("is-visible");
+      modal?.classList.add("is-visible");
+      backdrop?.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+
+      const todayEl = document.getElementById(
+        `schedule-day-${activeTodayIdx}`,
+      );
+      if (todayEl) {
+        setTimeout(() => {
+          todayEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 120);
+      }
     }
-  }
 
-  // Cerrar Modal
-  function closeModal() {
-    modal.classList.remove("is-visible");
-    backdrop.classList.remove("is-visible");
-    backdrop.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-  }
-
-  // Listeners de cierre
-  closeBtn.addEventListener("click", closeModal);
-
-  backdrop.addEventListener("click", (e) => {
-    if (e.target === backdrop) {
-      closeModal();
+    function closeModal() {
+      modal?.classList.remove("is-visible");
+      backdrop?.classList.remove("is-visible");
+      backdrop?.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
     }
-  });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && backdrop.classList.contains("is-visible")) {
-      closeModal();
-    }
-  });
+    closeBtn?.addEventListener("click", closeModal);
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) closeModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && backdrop.classList.contains("is-visible")) {
+        closeModal();
+      }
+    });
 
-  // Conectar todos los elementos con [data-open-schedule]
-  function bindTriggers() {
     const triggers = document.querySelectorAll("[data-open-schedule]");
     triggers.forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -205,13 +253,13 @@ const formatDayFull = (day: FeriaDay) => {
         openModal();
       });
     });
+
+    (window as any).openFullSchedule = openModal;
+    (window as any).closeFullSchedule = closeModal;
   }
 
-  bindTriggers();
-
-  // Exponer a window para llamadas globales
-  window.openFullSchedule = openModal;
-  window.closeFullSchedule = closeModal;
+  initModal();
+  document.addEventListener("astro:page-load", initModal);
 </script>
 
 <style>
@@ -526,6 +574,18 @@ const formatDayFull = (day: FeriaDay) => {
 
     .schedule-day-content {
       padding: 0.65rem 1.5rem 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .schedule-backdrop,
+    .schedule-sheet,
+    .chevron-icon {
+      transition: none !important;
+      transform: none !important;
+    }
+    .schedule-sheet.is-visible {
+      transform: none !important;
     }
   }
 </style>

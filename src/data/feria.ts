@@ -368,7 +368,7 @@ export const hotels: Place[] = [
     description: "Habitaciones limpias, wifi y desayuno incluido. A dos cuadras de todo.",
     hours: "Recepción 24h",
     address: "Una cuadra abajo del parque central",
-    image: "/images/place-hotel.jpg",
+    image: "/images/posadabelen.jpg",
     mapsUrl: "https://maps.google.com",
   },
 ];
@@ -379,7 +379,7 @@ export const landmarks: Place[] = [
     tagline: "Patrimonio colonial · Siglo XVIII",
     description: "El corazón espiritual del pueblo. Arquitectura colonial única en la región.",
     address: "Parque Central",
-    image: "/images/place-iglesia.jpg",
+    image: "/images/laermita-lugar.jpg",
     mapsUrl: "https://maps.google.com",
   },
 ];

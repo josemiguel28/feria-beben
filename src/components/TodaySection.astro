@@ -70,6 +70,15 @@ const navData = days.map((d, i) => ({
       <div class="day-nav-center" aria-live="polite" aria-atomic="true">
         <span class="day-nav-today-tag" id="today-tag">HOY</span>
         <span class="day-nav-current-label" id="current-label">—</span>
+        <button
+          type="button"
+          class="day-nav-return-btn"
+          id="btn-return-today"
+          style="display: none;"
+          aria-label="Regresar al día de hoy"
+        >
+          Volver a HOY
+        </button>
       </div>
 
       <button
@@ -100,7 +109,7 @@ const navData = days.map((d, i) => ({
           <!-- Cabecera del día -->
           <div class="today-header">
             <div class="today-header-left">
-              <p class="section-eyebrow">¿Qué hay hoy?</p>
+              <p class="section-eyebrow day-panel-eyebrow" id={`panel-eyebrow-${i}`}>{i === initialDayIndex ? "¿Qué hay hoy?" : "Actividades del día"}</p>
               <p class="today-day-sub">Día {ordinal} de {totalDays}</p>
             </div>
             <div
@@ -182,16 +191,16 @@ const navData = days.map((d, i) => ({
             </div>
           )}
 
-          <!-- Enlace secundario al programa completo -->
+          <!-- Enlace secundario al programa completo 
           <div class="see-all-wrap">
-            <a href="#proximo" class="see-all-link">
+            <button type="button" class="see-all-link" data-open-schedule>
               Ver programa completo
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="see-all-icon" aria-hidden="true">
                 <path fill-rule="evenodd" d="M8 2a.75.75 0 0 1 .75.75v8.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.22 3.22V2.75A.75.75 0 0 1 8 2Z" clip-rule="evenodd"/>
               </svg>
-            </a>
+            </button>
           </div>
-
+-->
         </div>
       );
     })}
@@ -201,20 +210,8 @@ const navData = days.map((d, i) => ({
 
 <!--
   ─── Script de navegación ──────────────────────────────────────────────────
-  Responsabilidades:
-  1. Determinar el día actual (por fecha real del dispositivo)
-  2. Mostrar ese día, ocultar los demás
-  3. Actualizar labels de navegación prev/next
-  4. Manejar botones de navegación
-  5. Marcar con "HOY" sólo el día calendario actual
-
-  Arquitectura preparada para:
-  - Detectar actividades "en curso" (via endTime, en iteración futura)
-  - Detectar "todas las actividades de hoy terminaron" (via endTime)
-  - Transición automática a "mañana" cuando el día actual termina
 -->
 <script define:vars={{ navData, initialDayIndex }}>
-  // ─── Estado ────────────────────────────────────────────────────────────────
   const DAYS = navData;  // [{ date, label }]
   const TOTAL = DAYS.length;
 
@@ -222,30 +219,24 @@ const navData = days.map((d, i) => ({
   const todayISO = new Date().toISOString().split("T")[0];
   const todayIdx = DAYS.findIndex((d) => d.date === todayISO);
 
-  // Si no encontramos la fecha (antes o después de la feria), usamos el índice
-  // calculado en el servidor como fallback.
   let calendarTodayIdx = todayIdx !== -1 ? todayIdx : initialDayIndex;
-
-  // Índice actualmente visible en la UI
   let activeIdx = calendarTodayIdx;
 
-  // ─── Referencias DOM ───────────────────────────────────────────────────────
-  const btnPrev     = document.getElementById("day-prev");
-  const btnNext     = document.getElementById("day-next");
-  const prevLabel   = document.getElementById("prev-label");
-  const nextLabel   = document.getElementById("next-label");
-  const currentLbl  = document.getElementById("current-label");
-  const todayTag    = document.getElementById("today-tag");
-  const panels      = Array.from(document.querySelectorAll(".day-panel"));
+  // Referencias DOM
+  const btnPrev       = document.getElementById("day-prev");
+  const btnNext       = document.getElementById("day-next");
+  const prevLabel     = document.getElementById("prev-label");
+  const nextLabel     = document.getElementById("next-label");
+  const currentLbl    = document.getElementById("current-label");
+  const todayTag      = document.getElementById("today-tag");
+  const btnReturnToday = document.getElementById("btn-return-today");
+  const panels        = Array.from(document.querySelectorAll(".day-panel"));
 
-  // ─── showDay ───────────────────────────────────────────────────────────────
   function showDay(idx) {
-    // Ocultar todos los paneles
     panels.forEach((p, i) => {
       p.hidden = i !== idx;
     });
 
-    // Labels de navegación
     const hasPrev = idx > 0;
     const hasNext = idx < TOTAL - 1;
 
@@ -256,21 +247,35 @@ const navData = days.map((d, i) => ({
     nextLabel.textContent = hasNext ? DAYS[idx + 1].label : "";
     currentLbl.textContent = DAYS[idx].label;
 
-    // Badge "HOY": solo aparece cuando estamos viendo el día calendario actual
     const isCalendarToday = idx === calendarTodayIdx;
-    todayTag.hidden = !isCalendarToday;
-    todayTag.setAttribute("aria-hidden", String(!isCalendarToday));
+    if (isCalendarToday) {
+      todayTag.style.display = "inline-flex";
+      btnReturnToday.style.display = "none";
+    } else {
+      todayTag.style.display = "none";
+      btnReturnToday.style.display = "inline-flex";
+      btnReturnToday.textContent = `Ir a HOY (${DAYS[calendarTodayIdx].label})`;
+    }
+
+    // Actualizar eyebrow del panel
+    const eyebrow = document.getElementById(`panel-eyebrow-${idx}`);
+    if (eyebrow) {
+      eyebrow.textContent = isCalendarToday ? "¿Qué hay hoy?" : "Actividades del día";
+    }
 
     activeIdx = idx;
   }
 
-  // ─── Listeners ─────────────────────────────────────────────────────────────
   btnPrev.addEventListener("click", () => {
     if (activeIdx > 0) showDay(activeIdx - 1);
   });
 
   btnNext.addEventListener("click", () => {
     if (activeIdx < TOTAL - 1) showDay(activeIdx + 1);
+  });
+
+  btnReturnToday.addEventListener("click", () => {
+    showDay(calendarTodayIdx);
   });
 
   // ─── Swipe support para la navegación (mobile) ────────────────────────────
@@ -374,6 +379,26 @@ const navData = days.map((d, i) => ({
     color: var(--color-ink);
     letter-spacing: -0.01em;
     white-space: nowrap;
+  }
+
+  .day-nav-return-btn {
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    background: rgba(240, 90, 22, 0.1);
+    border: 1px solid rgba(240, 90, 22, 0.25);
+    padding: 0.2em 0.55em;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .day-nav-return-btn:hover {
+    background: var(--color-accent);
+    color: #FFFFFF;
   }
 
   /* ─── Panel de día ───────────────────────────────── */
@@ -667,9 +692,13 @@ const navData = days.map((d, i) => ({
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
+    font-family: var(--font-body);
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
     text-decoration: none;
     transition: color 0.15s ease;
     min-height: 36px;

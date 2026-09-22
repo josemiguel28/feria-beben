@@ -1,5 +1,6 @@
 ---
-// UpcomingSection.astro — Próximas actividades (estilo editorial limpio)
+// UpcomingSection.astro — Previsualización de lo que viene inmediatamente después
+// Muestra únicamente el día siguiente (Mañana) + botón secundario "Ver todas las actividades →"
 import type { FeriaDay } from "../data/feria";
 import ActivityRow from "./ActivityRow.astro";
 
@@ -9,15 +10,7 @@ interface Props {
 
 const { days } = Astro.props;
 
-const [tomorrow, ...laterDays] = days;
-
-// Helper: nombre corto del día "Mié 23"
-const shortLabel = (day: FeriaDay) => {
-  const d = new Date(day.date + "T12:00:00");
-  const wd = d.toLocaleDateString("es-HN", { weekday: "short" });
-  const wdCap = wd.charAt(0).toUpperCase() + wd.slice(1).replace(".", "");
-  return `${wdCap} ${day.dayNumber}`;
-};
+const tomorrow = days[0];
 
 // Full day name for tomorrow
 const tomorrowFull = (day: FeriaDay) => {
@@ -27,71 +20,66 @@ const tomorrowFull = (day: FeriaDay) => {
 };
 ---
 
-{days.length > 0 && (
-  <section id="proximo" class="upcoming-section" aria-label="Próximas actividades" style="scroll-margin-top: 56px;">
-    <div class="container">
+<section id="proximo" class="upcoming-section" aria-label="Próximas actividades" style="scroll-margin-top: 56px;">
+  <div class="container">
 
-      <!-- Header -->
-      <div class="upcoming-header">
-        <p class="section-eyebrow upcoming-eyebrow">¿Qué viene después?</p>
-      </div>
+    <!-- Header -->
+    <div class="upcoming-header">
+      <p class="section-eyebrow upcoming-eyebrow">¿Qué viene después?</p>
+    </div>
 
-      <!-- ── Mañana (expandido) ─────────────────────── -->
-      {tomorrow && (
-        <div class="tomorrow-block">
-          <h2 class="tomorrow-title">
-            <span class="tomorrow-label">Mañana</span>
-            <span class="tomorrow-day">— {tomorrowFull(tomorrow)} {tomorrow.dayNumber}</span>
-          </h2>
-          <div role="list" aria-label={`Actividades del ${tomorrowFull(tomorrow)} ${tomorrow.dayNumber}`}>
-            {tomorrow.activities.map((act) => (
-              <div role="listitem">
-                <ActivityRow activity={act} compact={true} />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <!-- ── Días siguientes ────────────────────────── -->
-      {laterDays.length > 0 && (
-        <div class="later-section">
-          {laterDays.map((day) => (
-            <details class="later-day">
-              <summary class="later-day-summary" aria-label={`${shortLabel(day)}: ${day.activities.length} actividades`}>
-                <span class="later-day-name">{shortLabel(day)}</span>
-                <span class="later-day-count">{day.activities.length} actividades</span>
-                <svg class="later-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-                </svg>
-              </summary>
-
-              <div class="later-day-activities" role="list">
-                {day.activities.map((act) => (
-                  <div role="listitem">
-                    <ActivityRow activity={act} compact={true} />
-                  </div>
-                ))}
-              </div>
-            </details>
+    <!-- ── Mañana (Previsualización única) ─────────── -->
+    {tomorrow ? (
+      <div class="tomorrow-block">
+        <h2 class="tomorrow-title">
+          <span class="tomorrow-label">Mañana</span>
+          <span class="tomorrow-day">— {tomorrowFull(tomorrow)} {tomorrow.dayNumber}</span>
+        </h2>
+        <div role="list" aria-label={`Actividades del ${tomorrowFull(tomorrow)} ${tomorrow.dayNumber}`}>
+          {tomorrow.activities.map((act) => (
+            <div role="listitem">
+              <ActivityRow activity={act} compact={true} />
+            </div>
           ))}
         </div>
-      )}
+      </div>
+    ) : (
+      <div class="tomorrow-block">
+        <h2 class="tomorrow-title">
+          <span class="tomorrow-label">Último día de feria</span>
+        </h2>
+        <p class="tomorrow-empty-msg">Hoy concluyen las festividades de la feria patronal.</p>
+      </div>
+    )}
 
+    <!-- ── Botón Secundario: Ver todas las actividades ── -->
+    <div class="upcoming-cta-wrap">
+      <button
+        type="button"
+        class="btn-see-all-schedule"
+        data-open-schedule
+        aria-label="Abrir programa completo con todas las actividades"
+      >
+        <span>Ver todas las actividades</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="cta-arrow" aria-hidden="true">
+          <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+        </svg>
+      </button>
     </div>
-  </section>
-)}
+
+  </div>
+</section>
 
 <style>
   .upcoming-section {
     background-color: var(--color-bg);
     border-top: 1px solid var(--color-border);
-    padding-block: 3rem 3.5rem;
+    padding-block: 2.75rem 3.25rem;
   }
 
   /* ─── Header ──────────────────────────────────────── */
   .upcoming-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
 
   .upcoming-eyebrow {
@@ -101,18 +89,16 @@ const tomorrowFull = (day: FeriaDay) => {
 
   /* ─── Mañana ──────────────────────────────────────── */
   .tomorrow-block {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1.5rem;
   }
 
   .tomorrow-title {
     font-family: var(--font-body);
-    font-size: clamp(1.25rem, 5vw, 1.75rem);
+    font-size: clamp(1.25rem, 5vw, 1.625rem);
     font-weight: 800;
     color: var(--color-ink);
-    margin: 0 0 1.25rem;
-    line-height: 1.15;
+    margin: 0 0 1rem;
+    line-height: 1.2;
     letter-spacing: -0.025em;
     display: flex;
     flex-wrap: wrap;
@@ -133,75 +119,61 @@ const tomorrowFull = (day: FeriaDay) => {
     letter-spacing: 0;
   }
 
-  /* ─── Días siguientes ─────────────────────────────── */
-  .later-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+  .tomorrow-empty-msg {
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    color: var(--color-muted);
+    margin: 0 0 1rem;
   }
 
-  /* details nativo */
-  .later-day {
-    border-top: 1px solid var(--color-border);
+  /* ─── Botón Secundario "Ver todas las actividades" ── */
+  .upcoming-cta-wrap {
+    padding-top: 0.75rem;
   }
 
-  .later-day:last-child {
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .later-day-summary {
-    display: flex;
+  .btn-see-all-schedule {
+    display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.9rem 0;
-    cursor: pointer;
-    list-style: none;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
     min-height: 48px;
-    user-select: none;
-
-    &::-webkit-details-marker { display: none; }
-    &::marker { display: none; }
+    padding: 0.75rem 1.25rem;
+    background-color: #FFFFFF;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    letter-spacing: -0.005em;
   }
 
-  .later-day-summary:hover .later-day-name {
+  .btn-see-all-schedule:hover {
+    border-color: #D1D5DB;
+    background-color: #F9FAFB;
     color: var(--color-accent);
   }
 
-  .later-day-name {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-ink);
-    flex: 1;
-    letter-spacing: -0.01em;
-    transition: color 0.15s ease;
-  }
-
-  .later-day-count {
-    font-family: var(--font-body);
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-muted);
-    white-space: nowrap;
-  }
-
-  .later-chevron {
+  .cta-arrow {
     width: 1rem;
     height: 1rem;
-    color: var(--color-muted);
+    color: var(--color-accent);
     flex-shrink: 0;
-    transition: transform 0.2s ease, color 0.15s ease;
+    transition: transform 0.15s ease;
   }
 
-  .later-day-summary:hover .later-chevron {
-    color: var(--color-ink);
+  .btn-see-all-schedule:hover .cta-arrow {
+    transform: translateX(3px);
   }
 
-  details[open] .later-chevron {
-    transform: rotate(180deg);
-  }
-
-  .later-day-activities {
-    padding-bottom: 0.75rem;
+  @media (min-width: 480px) {
+    .btn-see-all-schedule {
+      width: auto;
+      padding-inline: 1.5rem;
+    }
   }
 </style>

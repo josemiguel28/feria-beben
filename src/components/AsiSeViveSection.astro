@@ -1,0 +1,576 @@
+---
+// AsiSeViveSection.astro — "ASÍ SE VIVE BELÉN"
+// Exploración de composición y distribución de imágenes Mobile-First (~390px)
+// Admite tanto fotografías reales (asignando la propiedad `src`) como placeholders
+// técnicos neutros si la propiedad `src` está vacía ("").
+
+export interface GalleryItem {
+  id: string;
+  type: "photo" | "video";
+  src: string; // 👈 RUTA DE LA FOTO REAL: ej: "/images/galeria/foto-01.jpg"
+  alt: string; // Texto descriptivo para accesibilidad
+  videoSrc?: string; // Ruta a video si se usa <video> o iframe
+  label: string; // Identificador durante diseño (PHOTO 01, PHOTO 02, etc.)
+  aspectRatio: string; // Proporción CSS (16 / 9, 4 / 5, 1 / 1)
+  ratioLabel: string; // Etiqueta visual de la proporción
+  contextHint: string; // Breve pie contextual (ej: "Vista panorámica del pueblo")
+  colSpan: 1 | 2; // 2 = ancho completo (100%), 1 = 2 columnas (50%)
+  duration?: string; // Duración para elemento de video
+}
+
+const items: GalleryItem[] = [
+  // ── 1. FOTO PROTAGONISTA (100% ancho · 16:9) ──────────────────────────────
+  // Imagen dominante que abre la sección (paisaje panorámico o vista general)
+  {
+    id: "photo-01",
+    type: "photo",
+    src: "/images/galeria/foto-01.jpg", // 👈 Sustituye con tu foto real (ej: "/images/galeria/foto-01.jpg")
+    alt: "Vista panorámica del pueblo de Belén",
+    label: "PHOTO 01",
+    aspectRatio: "16 / 9",
+    ratioLabel: "16:9 · Protagonista",
+    contextHint: "Vista panorámica del pueblo",
+    colSpan: 2,
+  },
+
+  // ── 2 y 3. DÚO VERTICAL (2 columnas · 4:5) ─────────────────────────────────
+  // Proporción vertical para reducir scroll y destacar calles y detalles
+  {
+    id: "photo-02",
+    type: "photo",
+    src: "", // 👈 Sustituye con tu foto real (ej: "/images/galeria/foto-02.jpg")
+    alt: "Calles empedradas y arquitectura colonial de Belén",
+    label: "PHOTO 02",
+    aspectRatio: "4 / 5",
+    ratioLabel: "4:5 · Vertical",
+    contextHint: "Calles y arquitectura",
+    colSpan: 1,
+  },
+  {
+    id: "photo-03",
+    type: "photo",
+    src: "", // 👈 Sustituye con tu foto real (ej: "/images/galeria/foto-03.jpg")
+    alt: "Detalles y tradiciones de la comunidad",
+    label: "PHOTO 03",
+    aspectRatio: "4 / 5",
+    ratioLabel: "4:5 · Vertical",
+    contextHint: "Tradición y detalles",
+    colSpan: 1,
+  },
+
+  // ── 4. ELEMENTO DE VIDEO (100% ancho · 16:9) ───────────────────────────────
+  // Preparado para video o fotografía de portada de video con botón play
+  {
+    id: "video-04",
+    type: "video",
+    src: "", // 👈 Sustituye con la portada del video (ej: "/images/galeria/video-thumb.jpg")
+    alt: "Ambiente y momentos en vivo de la feria",
+    videoSrc: "", // Opcional: ruta al archivo de video o embed
+    label: "VIDEO 04",
+    aspectRatio: "16 / 9",
+    ratioLabel: "16:9 · Video preview",
+    contextHint: "Ambiente de la feria",
+    colSpan: 2,
+    duration: "0:45",
+  },
+
+  // ── 5 y 6. DÚO DINÁMICO (2 columnas · 1:1) ─────────────────────────────────
+  // Formato cuadrado para personas, sonrisas y momentos espontáneos
+  {
+    id: "photo-05",
+    type: "photo",
+    src: "", // 👈 Sustituye con tu foto real (ej: "/images/galeria/foto-05.jpg")
+    alt: "Gente y familias de Belén",
+    label: "PHOTO 05",
+    aspectRatio: "1 / 1",
+    ratioLabel: "1:1 · Cuadrado",
+    contextHint: "Gente de Belén",
+    colSpan: 1,
+  },
+  {
+    id: "photo-06",
+    type: "photo",
+    src: "", // 👈 Sustituye con tu foto real (ej: "/images/galeria/foto-06.jpg")
+    alt: "Celebración y alegría durante los días de feria",
+    label: "PHOTO 06",
+    aspectRatio: "1 / 1",
+    ratioLabel: "1:1 · Cuadrado",
+    contextHint: "Momentos de la feria",
+    colSpan: 1,
+  },
+
+  // ── 7. CIERRE PANORÁMICO (100% ancho · 16:9) ──────────────────────────────
+  // Remate sereno de la composición visual antes de la información práctica
+  {
+    id: "photo-07",
+    type: "photo",
+    src: "", // 👈 Sustituye con tu foto real (ej: "/images/galeria/foto-07.jpg")
+    alt: "Atardecer en la plaza municipal de Belén",
+    label: "PHOTO 07",
+    aspectRatio: "16 / 9",
+    ratioLabel: "16:9 · Cierre",
+    contextHint: "Atardecer en la plaza",
+    colSpan: 2,
+  },
+];
+---
+
+<section id="asi-se-vive" class="vive-section" aria-label="Así se vive Belén">
+  <div class="container">
+    <!-- ── Encabezado ─────────────────────────────────────────────── -->
+    <header class="vive-header">
+      <p class="vive-eyebrow">¿Cómo es Belén?</p>
+      <h2 class="vive-title">Así se vive Belén</h2>
+      <p class="vive-subtitle">
+        Una mirada al pueblo, sus paisajes y los momentos de la feria.
+      </p>
+    </header>
+
+    <!-- ── Grid de Composición (Mobile-First) ─────────────────────── -->
+    <div
+      class="vive-grid"
+      role="region"
+      aria-label="Composición fotográfica de Belén"
+    >
+      {
+        items.map((item) => (
+          <div
+            class:list={[
+              "vive-item",
+              `vive-item--${item.type}`,
+              item.colSpan === 2 ? "vive-item--full" : "vive-item--half",
+            ]}
+            style={`--aspect-ratio: ${item.aspectRatio};`}
+            data-id={item.id}
+          >
+            {item.src ? (
+              /* ── Foto o Video REAL (cuando item.src tiene valor) ── */
+              <figure class="photo-card">
+                <img
+                  src={item.src}
+                  alt={item.alt || item.contextHint}
+                  class="photo-img"
+                  loading="lazy"
+                  decoding="async"
+                />
+
+                {item.type === "video" && (
+                  <div class="video-overlay" aria-label="Video de la feria">
+                    <div class="play-btn">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="play-icon"
+                        aria-hidden="true"
+                      >
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                    {item.duration && (
+                      <span class="video-duration-badge">{item.duration}</span>
+                    )}
+                  </div>
+                )}
+
+                {item.contextHint && (
+                  <figcaption class="photo-caption">
+                    <span class="caption-text">{item.contextHint}</span>
+                  </figcaption>
+                )}
+              </figure>
+            ) : (
+              /* ── PLACEHOLDER TÉCNICO (cuando item.src está vacío) ── */
+              <div class="placeholder-box">
+                <div class="placeholder-bg" aria-hidden="true" />
+
+                <div class="placeholder-center">
+                  {item.type === "video" ? (
+                    <div
+                      class="video-play-indicator"
+                      aria-label="Elemento de video"
+                    >
+                      <div class="play-btn">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          class="play-icon"
+                          aria-hidden="true"
+                        >
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                      {item.duration && (
+                        <span class="video-duration-badge">
+                          {item.duration}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div class="photo-indicator" aria-hidden="true">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="camera-icon"
+                      >
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle cx="12" cy="13" r="4" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                <div class="placeholder-footer">
+                  <div class="footer-top">
+                    <span
+                      class:list={[
+                        "item-tag",
+                        { "item-tag--video": item.type === "video" },
+                      ]}
+                    >
+                      {item.label}
+                    </span>
+                    <span class="ratio-tag">{item.ratioLabel}</span>
+                  </div>
+                  <p class="context-hint">{item.contextHint}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ─── Sección ────────────────────────────────────────────── */
+  .vive-section {
+    background-color: var(--color-bg);
+    padding-block: 3.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* ─── Encabezado ─────────────────────────────────────────── */
+  .vive-header {
+    margin-bottom: 2rem;
+  }
+
+  .vive-eyebrow {
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0 0 0.5rem;
+  }
+
+  .vive-title {
+    font-family: var(--font-body);
+    font-size: clamp(1.75rem, 7vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--color-ink);
+    margin: 0 0 0.5rem;
+  }
+
+  .vive-subtitle {
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    color: var(--color-muted);
+    margin: 0;
+    max-width: 44ch;
+    line-height: 1.5;
+  }
+
+  /* ─── Grid de Composición (Mobile-First: 2 columnas con span flexible) ── */
+  .vive-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem; /* 12px de separación equilibrada */
+  }
+
+  .vive-item {
+    position: relative;
+    width: 100%;
+  }
+
+  .vive-item--full {
+    grid-column: span 2;
+  }
+
+  .vive-item--half {
+    grid-column: span 1;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     ESTILOS PARA FOTOGRAFÍAS REALES (cuando item.src tiene ruta)
+     ═══════════════════════════════════════════════════════════ */
+  .photo-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--aspect-ratio, 16 / 9);
+    margin: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #f3f4f6;
+    border: 1px solid var(--color-border);
+  }
+
+  .photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+
+  .photo-card:hover .photo-img {
+    transform: scale(1.02);
+  }
+
+  /* Overlay de video con botón play para fotos reales */
+  .video-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+  }
+
+  /* Pie de foto sutil sobre la imagen */
+  .photo-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem 0.75rem 0.625rem;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.65) 0%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    pointer-events: none;
+  }
+
+  .caption-text {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     ESTILOS PARA PLACEHOLDERS (cuando item.src está vacío "")
+     ═══════════════════════════════════════════════════════════ */
+  .placeholder-box {
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--aspect-ratio, 16 / 9);
+    background-color: #f8f9fa;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.875rem;
+    box-sizing: border-box;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  /* Retícula geométrica técnica muy sutil en el fondo */
+  .placeholder-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+  }
+
+  /* Centro (Icono o Play button) */
+  .placeholder-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .photo-indicator {
+    color: #9ca3af;
+    opacity: 0.65;
+    transition: opacity 0.2s ease;
+  }
+
+  .camera-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Estilo para el elemento de video */
+  .vive-item--video .placeholder-box {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+  }
+
+  .video-play-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .play-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #1c1b18;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+  }
+
+  .play-icon {
+    width: 20px;
+    height: 20px;
+    margin-left: 2px; /* Alineación óptica del triángulo */
+  }
+
+  .video-duration-badge {
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    background-color: rgba(28, 27, 24, 0.85);
+    color: #ffffff;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  /* Footer y etiquetas del placeholder */
+  .placeholder-footer {
+    position: relative;
+    z-index: 2;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .footer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .item-tag {
+    font-family: var(--font-body);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    color: var(--color-ink);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .item-tag--video {
+    background-color: var(--color-ink);
+    color: #ffffff;
+    border-color: transparent;
+  }
+
+  .ratio-tag {
+    font-family: var(--font-body);
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    background-color: rgba(255, 255, 255, 0.75);
+    padding: 2px 5px;
+    border-radius: 4px;
+  }
+
+  .context-hint {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
+  }
+
+  /* Pantallas móviles muy compactas (< 360px) */
+  @media (max-width: 360px) {
+    .placeholder-box {
+      padding: 0.625rem;
+    }
+    .context-hint {
+      font-size: 0.6875rem;
+    }
+    .ratio-tag {
+      display: none;
+    }
+  }
+
+  /* ─── Tablet y Desktop ───────────────────────────────────── */
+  @media (min-width: 580px) {
+    .vive-grid {
+      gap: 1rem;
+    }
+    .placeholder-box,
+    .photo-card {
+      border-radius: 12px;
+    }
+    .placeholder-box {
+      padding: 1rem;
+    }
+    .camera-icon {
+      width: 36px;
+      height: 36px;
+    }
+    .play-btn {
+      width: 54px;
+      height: 54px;
+    }
+    .play-icon {
+      width: 22px;
+      height: 22px;
+    }
+  }
+</style>

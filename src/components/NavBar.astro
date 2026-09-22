@@ -117,13 +117,13 @@ const { shortName } = Astro.props;
     flex-shrink: 0;
   }
 
-  /* Pequeño acento naranja — único color de identidad en el nav */
-  .logo-mark {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background-color: var(--color-accent);
-    flex-shrink: 0;
+  .logo-img {
+    height: 40px;
+    width: auto;
+    max-width: 120px;
+    object-fit: contain;
+    display: block;
+    border-radius: 4px;
   }
 
   .logo-text {
